@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from SIF import SIF
-import numpy as np
+import sys
+sys.path.insert(0, 'SIF')
+import SIF
 from time import time
 
 
 year = '15'
 n_params = 32
 
-RD = SIF.RunData(year=year,n_params=n_params)
+RD = SIF.RunData(year=year, n_params=n_params)
 #RD = SIF.RunData(year=year,only_HiTS_SN=only_HiTS_SN,n_params=n_params,filter_type='MCC')
 if RD.n_params > 0:
     RD.apply_params()
@@ -21,7 +22,7 @@ MJD = FH.MJD
 KF,SN = RD.deploy_filter_and_detector(MJD)
 
 if RD.SN_index>=0:
-    OB = SIF.Observer(len(MJD),new_pos=RD.SN_pos)
+    OB = SIF.Observer(len(MJD), new_pos=RD.SN_pos)
 
 # First run: collect candidates
 

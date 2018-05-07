@@ -16,6 +16,7 @@ class RunData(object):
     def __init__(self, year='15', only_HiTS_SN=True, test_SN=92, filter_type='kalman', n_params=0,
                  results_dir='results'):
         self.year = year
+        # only CCDs with SN
         self.only_HiTS_SN = only_HiTS_SN
 
         # Asking if i am @leftraru
@@ -26,6 +27,7 @@ class RunData(object):
         if only_HiTS_SN:
             n_CCDs = 93
         else:
+            # sec number is the number of fields
             if self.year == '15':
                 n_CCDs = 62 * 56
             else:
@@ -34,6 +36,7 @@ class RunData(object):
         if self.at_leftraru:
             self.index = int(sys.argv[1])
         else:
+            # specific SN (test_SN)
             self.index = test_SN
             n_params = 0
 
@@ -42,7 +45,7 @@ class RunData(object):
             self.this_par = self.index / n_CCDs
             self.index = self.index % n_CCDs
 
-        self.SN_table = np.loadtxt('ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
+        self.SN_table = np.loadtxt('./orig-sif/ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
 
         self.images_size = (4096, 2048)
 
@@ -58,9 +61,11 @@ class RunData(object):
         self.filter_type = filter_type
 
     def apply_params(self):
+        # 4D grid (extract params)
         decomposing_parameter = self.this_par
         self.filter_type = ['kalman', 'MCC'][decomposing_parameter % 2]
         decomposing_parameter = decomposing_parameter / 2
+        # Change threshold
         self.flux_thres = [250, 375, 500, 625][decomposing_parameter % 4]
         decomposing_parameter = decomposing_parameter / 4
         self.vel_flux_thres = [0, 75, 150, 225][decomposing_parameter % 4]
@@ -83,6 +88,7 @@ class RunData(object):
         np.savez(self.results_dir + '/' + filename, objects=OB.obj)
 
     def decide_second_run(self, OB):
+        #number of unknown object (NUO)
         if self.NUO == 0:
             self.save_results(OB)
             sys.exit(0)
@@ -104,6 +110,7 @@ class FITSHandler(object):
 
         self.get_data_names()
 
+        # Classifier criteria aspects
         self.accum_neg_flux_depth = accum_neg_flux_depth
         self.accum_neg_flux = np.zeros(tuple([self.accum_neg_flux_depth]) + RD.images_size, dtype=bool)
 
@@ -125,6 +132,7 @@ class FITSHandler(object):
             self.data_names['base_crblaster'] = sorted(glob(
                 base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*image_crblaster.fits*'))[
                 2]
+            # projection
             self.data_names['science'] = sorted(glob(
                 base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*image_crblaster_grid02_lanczos2.fits'))
 
@@ -136,30 +144,36 @@ class FITSHandler(object):
             for science_filename in self.data_names['science']:
                 ind = science_filename.find('_image_')
                 epoch = science_filename[ind - 2:ind]
+                # difference image
                 self.data_names['diff'] += [np.sort(glob(
                     base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
                                                 0]]
+                # 1/var pf diff image
                 self.data_names['invVAR'] += [np.sort(glob(
                     base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
                                                   0]]
+
+                # diff image psf
                 self.data_names['psf'] += [np.sort(glob(
                     '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/psf*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
                                                0]]
+
+                # astrometric and relative flux constants
                 self.data_names['aflux'] += [np.sort(glob(
                     '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/match_*' + epoch + '-02.npy')).tolist()[
                                                  0]]
-
-        elif glob('C:/Users/'):  # Asus CMM
+        else:
 
             print 'At CMM'
 
             # baseDir = '/run/media/tesla/Almacen/Huentelemu/R20' + year + 'CCDs/HiTS' + str(snIndex).zfill(2) + 'SN/'
-            baseDir = 'C:/Users/Phuentelemu/Desktop/HiTS' + str(self.SN_index + 1).zfill(2) + 'SN/'
+            baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_01/57070.1072727/N1/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
             # baseDir = 'C:/Users/Bahamut/Desktop/HiTS' + str(self.SN_index+1).zfill(2) + 'SN/'
             # baseDir = 'D:/Lab Int Comp/R2015CCDs/HiTS' + str(self.SN_index+1).zfill(2) + 'SN/'
 
-            self.data_names['base'] = glob(baseDir + 'base/Blind*_02_image.fits*')[0]
-            self.data_names['base_crblaster'] = glob(baseDir + 'base/Blind*_02_image_crblaster.fits*')[0]
+            self.data_names['base'] = [baseDir+'Blind15A_01_N1_57070.1072727_image.fits.fz']
+            #glob(baseDir + '/Blind*_02_image.fits*')[0]
+            self.data_names['base_crblaster'] = [baseDir+'Blind15A_01_N1_57070.1072727_image_crblaster.fits']
             self.data_names['science'] = np.sort(glob(baseDir + 'science/*')).tolist()
 
             self.data_names['diff'] = []
@@ -183,12 +197,17 @@ class FITSHandler(object):
         print self.data_names['base']
         print self.data_names['diff']
 
-        self.base_image = fits.open(self.data_names['base'])[0].data
+        self.base_image = (fits.open(self.data_names['base'])[0]).data
         self.base_mask = fits.open(self.data_names['base'])[1].data
+
+        '''
+        dil base mask es una imagen de 0s y 1s?. No se si es la version nueva de python 2.7, o del modulo dilate que no
+        pesca el input
+        '''
         self.dil_base_mask = pm.dilate(self.base_mask > 0, B=np.ones((5, 5), dtype=bool))
 
         MJD = [float(fits.open(m)[0].header['MJD-OBS']) for m in self.data_names['science']]
-        # Order by MJD 
+        # Order by MJD
         MJDOrder = np.argsort(MJD)
         MJD = np.array([MJD[i] for i in MJDOrder])
 
@@ -328,7 +347,7 @@ class MaximumCorrentropyKalmanFilter(KalmanFilter):
         return np.exp((domain ** 2) / (2 * sigma ** 2))
 
     def chol2(self, P):
-        # Cholesky decomposition 
+        # Cholesky decomposition
         L = np.zeros(P.shape)
         L[0, :] = np.sqrt(P[0, :])
         L[1, :] = P[1, :] / L[0, :]
@@ -477,6 +496,7 @@ class SNDetector(object):
 
     def __init__(self, n_consecutive_alerts=4, images_size=(4096, 2048), flux_thres=500.0, vel_flux_thres=150.0,
                  vel_satu=3000.0):
+        # n_consecutive_alers -> 4 epochs ago
         self.n_conditions = 7
         self.n_consecutive_alerts = n_consecutive_alerts
         self.pixel_conditions = np.zeros(tuple([self.n_conditions]) + images_size, dtype=bool)

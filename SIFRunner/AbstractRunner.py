@@ -1,14 +1,21 @@
-
-
 from abc import abstractmethod
+
 
 class AbstractRunner(object):
 
-    # Files in Leftraru
-    base_input = '/home/apps/astro/data/ARCHIVE'
+    def __init__(self, year, filter='lk'):
 
-    # Output files path
-    output_path = None
+        # Files in Leftraru
+        self.base_input = '/home/apps/astro/data/ARCHIVE'
+
+        # Output files path
+        self.base_output = None
+
+        # Applied filter
+        self.filter = filter
+
+    def set_parameters(self):
+        pass
 
 
 

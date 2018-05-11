@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from SIF import SIF
+from Observer import Observer
+#from SIF import SIF
 from glob import glob
 import numpy as np
 
@@ -16,7 +17,7 @@ for result_name in all_results:
     objects = np.load(result_name)['objects']
     MJD = objects[0]['MJD']
     
-    new_obs = SIF.Observer(len(MJD),figsize1=18,figsize2=9.5)
+    new_obs = Observer(len(MJD),figsize1=18,figsize2=9.5)
     new_obs.obj = objects
     
     SN_found = result_name.find('AYE') >= 0

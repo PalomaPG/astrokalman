@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+from Observer import Observer
 
 import numpy as np
 import pandas as pd
 from glob import glob
-from SIF import SIF
 from time import time
 import matplotlib.pyplot as plt
 
@@ -56,7 +56,7 @@ for sn in range(93):
             continue
         
         objects = np.load(result)['objects']
-        new_obs = SIF.Observer(objects[0]['MJD'],figsize1=18,figsize2=9.5)
+        new_obs = Observer(objects[0]['MJD'],figsize1=18,figsize2=9.5)
         MJD = objects[0]['MJD']
         
         SN_found = result.find('AYE') >= 0

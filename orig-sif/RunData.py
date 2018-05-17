@@ -14,6 +14,15 @@ class RunData(object):
                  filter_type='kalman',
                  n_params=0,
                  results_dir='.'):
+        """
+
+        :param year:
+        :param only_HiTS_SN:
+        :param test_SN:
+        :param filter_type:
+        :param n_params:
+        :param results_dir:
+        """
         self.year = year
         # only CCDs with SN
         self.only_HiTS_SN = only_HiTS_SN
@@ -63,6 +72,10 @@ class RunData(object):
         self.filter_type = filter_type
 
     def apply_params(self):
+        """
+
+        :return:
+        """
         # 4D grid (extract params)
         decomposing_parameter = self.this_par
         self.filter_type = ['kalman', 'MCC'][decomposing_parameter % 2]
@@ -73,6 +86,11 @@ class RunData(object):
         self.vel_flux_thres = [0, 75, 150, 225][decomposing_parameter % 4]
 
     def deploy_filter_and_detector(self, MJD):
+        """
+
+        :param MJD:
+        :return:
+        """
         self.MJD = MJD
         if self.filter_type == 'kalman':
             KF = KalmanFilter(init_time=self.MJD[0] - 1.0)
@@ -82,6 +100,12 @@ class RunData(object):
         return KF, SN
 
     def save_results(self, OB, results_dir='results'):
+        """
+
+        :param OB:
+        :param results_dir:
+        :return:
+        """
         filename = self.field + '-' + self.resultccd + '_NUO-' + str(self.NUO).zfill(2)
         if self.SN_index >= 0:
             filename = 'HiTS' + str(self.SN_index + 1).zfill(2) + '-' + ['nay', 'AYE'][self.SN_found] + '_' + filename
@@ -90,6 +114,11 @@ class RunData(object):
         np.savez(self.results_dir + '/' + filename, objects=OB.obj)
 
     def decide_second_run(self, OB):
+        """
+
+        :param OB:
+        :return:
+        """
         #number of unknown object (NUO)
         if self.NUO == 0:
             self.save_results(OB)

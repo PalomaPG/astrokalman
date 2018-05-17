@@ -12,6 +12,12 @@ import pymorph as pm
 class FITSHandler(object):
 
     def __init__(self, RD, accum_neg_flux_depth=4, accum_med_flux_depth=3):
+        """
+        Fits image manager
+        :param RD: RunData instance
+        :param accum_neg_flux_depth:
+        :param accum_med_flux_depth:
+        """
         self.field = RD.field
         print RD.ccd
         self.ccd = RD.ccd
@@ -29,6 +35,10 @@ class FITSHandler(object):
         self.median_rejection = np.zeros(RD.images_size, dtype=bool)
 
     def get_data_names(self):
+        """
+
+        :return: Modified Julian day MJD
+        """
 
         self.data_names = {}
         base_dir = '/home/apps/astro/data/ARCHIVE/'
@@ -141,7 +151,18 @@ class FITSHandler(object):
         self.MJD = MJD
 
     def naylor_photometry(self, invvar):
-        self.flux = spn.convolve(self.diff * invvar, self.psf)
+        """
+
+        :param invvar:
+        :return:
+        """
+        input_1 = self.diff * invvar
+        #print 'dimension input 1 @ naylor_photometry %d' % input_1.ndim
+        #print 'dimension psf @ naylor_photometry %d' % self.psf.ndim
+        if input_1.ndim != self.psf.ndim:
+            return
+
+        self.flux = spn.convolve(input_1, self.psf)
         psf2 = self.psf ** 2
         convo = spn.convolve(invvar, psf2)
         convo[convo == 0] = 0.000001
@@ -149,6 +170,11 @@ class FITSHandler(object):
         self.flux = self.flux * self.var_flux
 
     def load_fluxes(self, o):
+        """
+
+        :param o:
+        :return:
+        """
 
         self.science = fits.open(self.data_names['science'][o])[0].data
         self.diff = fits.open(self.data_names['diff'][o])[0].data

@@ -9,6 +9,15 @@ class KalmanFilter(object):
 
     def __init__(self, init_time=0.0, init_state=0.0, images_size=(4094, 2046), initial_variance=100.0, sigma=1000.0,
                  std_factor=100.0):
+        """
+
+        :param init_time:
+        :param init_state:
+        :param images_size:
+        :param initial_variance:
+        :param sigma:
+        :param std_factor:
+        """
         self.num_states = 2
         self.num_cov_elements = self.num_states * (self.num_states + 1) / 2
 
@@ -27,9 +36,20 @@ class KalmanFilter(object):
         self.observation = 0
 
     def variable_accel_Q(self, delta_t, sigma_a=0.1):
+        """
+
+        :param delta_t:
+        :param sigma_a:
+        :return:
+        """
         return np.array([delta_t ** 4 / 4, delta_t ** 3 / 2, delta_t ** 2]) * (sigma_a ** 2)
 
     def predict_at_new_time(self, new_time):
+        """
+
+        :param new_time:
+        :return:
+        """
         # Obtain delta_t
         delta_t = new_time - self.time
 
@@ -45,6 +65,12 @@ class KalmanFilter(object):
         self.pred_state_cov[2, :] = self.pred_state_cov[2, :] + Q[2]
 
     def correct_with_measurements(self, z, R):
+        """
+
+        :param z:
+        :param R:
+        :return:
+        """
         # Obtain inverse of residual's covariance
         inv_S = pow(self.pred_state_cov[0, :] + R, -1)
 
@@ -59,6 +85,12 @@ class KalmanFilter(object):
         self.state_cov[2, :] = self.pred_state_cov[2, :] - self.kalman_gain[1, :] * self.pred_state_cov[1, :]
 
     def update(self, new_time, FH):
+        """
+
+        :param new_time:
+        :param FH:
+        :return:
+        """
         # Prediction
         self.predict_at_new_time(new_time)
 

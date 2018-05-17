@@ -9,6 +9,14 @@ import matplotlib.pyplot as plt
 class Observer(object):
 
     def __init__(self, num_obs, obs_rad=10, new_pos=[], figsize1=12, figsize2=8):
+        """
+
+        :param num_obs:
+        :param obs_rad:
+        :param new_pos:
+        :param figsize1:
+        :param figsize2:
+        """
         self.figsize1 = figsize1
         self.figsize2 = figsize2
         self.num_obs = num_obs
@@ -19,11 +27,24 @@ class Observer(object):
             self.new_object(new_pos[0], new_pos[1], status=1000)
 
     def new_objects_from_CandData(self, CandData):
+        """
+
+        :param CandData:
+        :return:
+        """
         for i in range(len(CandData)):
             self.new_object(CandData[i]['coords'][0], CandData[i]['coords'][1], epochs=CandData[i]['epochs'],
                             status=CandData[i]['status'])
 
     def new_object(self, posY, posX, epochs=[-1], status=-1):
+        """
+
+        :param posY:
+        :param posX:
+        :param epochs:
+        :param status:
+        :return:
+        """
         new_obj = {'posY': posY, 'posX': posX, 'epochs': epochs, 'status': status}
         new_obj['pred_state'] = np.zeros((self.num_obs, 2, self.obs_diam, self.obs_diam))
         new_obj['pred_state_cov'] = np.zeros((self.num_obs, 3, self.obs_diam, self.obs_diam))
@@ -43,6 +64,14 @@ class Observer(object):
         self.obj += [new_obj]
 
     def rescue_run_data(self, o, FH, KF, SND):
+        """
+
+        :param o:
+        :param FH:
+        :param KF:
+        :param SND:
+        :return:
+        """
         for i in range(len(self.obj)):
             a, b = self.obj[i]['posY'] - self.obs_rad, self.obj[i]['posY'] + self.obs_rad + 1
             c, d = self.obj[i]['posX'] - self.obs_rad, self.obj[i]['posX'] + self.obs_rad + 1
@@ -63,6 +92,16 @@ class Observer(object):
             self.obj[i]['dil_base_mask'][o, :] = FH.dil_base_mask[a:b, c:d]
 
     def print_lightcurve(self, MJD, obj, posY=-1, posX=-1, save_filename='', SN_found=False):
+        """
+
+        :param MJD:
+        :param obj:
+        :param posY:
+        :param posX:
+        :param save_filename:
+        :param SN_found:
+        :return:
+        """
 
         num_graphs = 4
 
@@ -125,6 +164,13 @@ class Observer(object):
         plt.close(this_fig)
 
     def stack_stamps(self, stamps, MJD, max_value=10000):
+        """
+
+        :param stamps:
+        :param MJD:
+        :param max_value:
+        :return:
+        """
         stack = stamps[0, :]
         prev_time = MJD[0]
         stamps_diam = stamps.shape[1]
@@ -138,6 +184,14 @@ class Observer(object):
         return stack
 
     def print_stamps(self, MJD, obj, save_filename='', SN_found=False):
+        """
+
+        :param MJD:
+        :param obj:
+        :param save_filename:
+        :param SN_found:
+        :return:
+        """
 
         num_graphs = 9
 
@@ -198,6 +252,16 @@ class Observer(object):
         plt.close(this_fig)
 
     def print_space_states(self, MJD, obj, posY=-1, posX=-1, save_filename='', SN_found=False):
+        """
+
+        :param MJD:
+        :param obj:
+        :param posY:
+        :param posX:
+        :param save_filename:
+        :param SN_found:
+        :return:
+        """
 
         if posY == -1:
             posY = self.obs_rad
@@ -224,6 +288,17 @@ class Observer(object):
         plt.close(this_fig)
 
     def print_all_space_states(self, fig, MJD, obj, sn, NUO, SN_found, save_filename=''):
+        """
+
+        :param fig:
+        :param MJD:
+        :param obj:
+        :param sn:
+        :param NUO:
+        :param SN_found:
+        :param save_filename:
+        :return:
+        """
 
         posY = self.obs_rad
         posX = self.obs_rad

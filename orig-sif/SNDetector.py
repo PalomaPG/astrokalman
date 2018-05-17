@@ -10,6 +10,14 @@ class SNDetector(object):
 
     def __init__(self, n_consecutive_alerts=4, images_size=(4094, 2046), flux_thres=500.0, vel_flux_thres=150.0,
                  vel_satu=3000.0):
+        """
+        An object that defines a supernova detector
+        :param n_consecutive_alerts:
+        :param images_size:
+        :param flux_thres:
+        :param vel_flux_thres:
+        :param vel_satu:
+        """
         # n_consecutive_alers -> 4 epochs ago
         self.n_conditions = 7
         self.n_consecutive_alerts = n_consecutive_alerts
@@ -22,6 +30,12 @@ class SNDetector(object):
         self.vel_satu = vel_satu
 
     def subsampled_median(self, image, sampling):
+        """
+
+        :param image:
+        :param sampling:
+        :return:
+        """
         size1 = 4094
         size2 = 2046
         margin = 100
@@ -38,6 +52,13 @@ class SNDetector(object):
         return np.median(sampled_image)
 
     def pixel_discrimination(self, o, FH, KF):
+        """
+
+        :param o:
+        :param FH:
+        :param KF:
+        :return:
+        """
 
         epoch_science_median = self.subsampled_median(FH.science, 20)
 
@@ -64,6 +85,10 @@ class SNDetector(object):
         self.accum_compliant_pixels[o % self.n_consecutive_alerts, :] = self.pixel_flags == 0
 
     def neighboring_pixels(self):
+        """
+
+        :return:
+        """
 
         self.PGData = {}  # Pixel group data
         self.PGData['pixel_coords'] = []
@@ -93,6 +118,12 @@ class SNDetector(object):
             self.PGData['mid_coords'][i, :] = np.round(np.mean(self.PGData['pixel_coords'][i], 0))
 
     def filter_groups(self, FH, KF):
+        """
+
+        :param FH:
+        :param KF:
+        :return:
+        """
         n_pixel_groups = self.PGData['mid_coords'].shape[0]
 
         self.PGData['group_flags'] = np.zeros(n_pixel_groups, dtype=int)
@@ -164,6 +195,13 @@ class SNDetector(object):
             self.PGData['group_flags'][i]
 
     def draw_complying_pixel_groups(self, o, FH, KF):
+        """
+
+        :param o:
+        :param FH:
+        :param KF:
+        :return:
+        """
 
         # Discriminate every pixel by itself
         self.pixel_discrimination(o, FH, KF)
@@ -178,6 +216,11 @@ class SNDetector(object):
         print '  Filtered Pixel Groups: ' + str(len(np.nonzero(self.PGData['group_flags'] == 0)[0]))
 
     def update_candidates(self, o):
+        """
+
+        :param o:
+        :return:
+        """
         cand_mid_coords = self.PGData['mid_coords'][self.PGData['group_flags'] == 0, :]
 
         for i in range(cand_mid_coords.shape[0]):
@@ -199,6 +242,11 @@ class SNDetector(object):
                         break
 
     def check_candidates(self, RD):
+        """
+
+        :param RD: RunData instance
+        :return:
+        """
 
         RD.NUO = 0  # Number of Unknown Objects
 

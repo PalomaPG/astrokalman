@@ -48,7 +48,7 @@ for o in range(len(MJD)):
     print 'Update filter time: ' + str(time()-ti)
     
     ti = time()
-    SN.draw_complying_pixel_groups(o,FH,KF)
+    SN.draw_complying_pixel_groups(o, FH, KF)
     print 'Draw groups time: ' + str(time()-ti)
     
     SN.update_candidates(o)
@@ -73,25 +73,32 @@ KF, SN = RD.deploy_filter_and_detector(MJD)
 OB = Observer(len(MJD))
 OB.new_objects_from_CandData(RD.CandData)
 
+load_photometry_time = 0
+update_filter_time = 0
+draw_groups_time = 0
+
 for o in range(len(MJD)):
     print 'Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD))
     
     ti = time()
     FH.load_fluxes(o)
-    print 'Load and photometry time: ' + str(time()-ti)
+    load_photometry_time = (time()-ti) + load_photometry_time
     
     ti = time()
     KF.update(MJD[o],FH)
-    print 'Update filter time: ' + str(time()-ti)
+    update_filter_time = (time()-ti) + update_filter_time
     
     ti = time()
-    SN.draw_complying_pixel_groups(o,FH,KF)
-    print 'Draw groups time: ' + str(time()-ti)
+    SN.draw_complying_pixel_groups(o, FH, KF)
+    draw_groups_time = (time()-ti) + draw_groups_time
     
-    OB.rescue_run_data(o,FH,KF,SN)
+    OB.rescue_run_data(o, FH, KF, SN)
     
     print ''
 
 RD.save_results(OB)
 
 print 'Total time: '+str(time()-init)
+print 'Loading photometry: %s\n' % str(load_photometry_time)
+print 'Updating filter: %s\n' % str(update_filter_time)
+print 'Drawing groups: %s\n' % str(draw_groups_time)

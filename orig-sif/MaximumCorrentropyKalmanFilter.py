@@ -10,6 +10,12 @@ from KalmanFilter import KalmanFilter
 class MaximumCorrentropyKalmanFilter(KalmanFilter):
 
     def image_stats(self, image, outlier_percentage=2.0):
+        """
+
+        :param image:
+        :param outlier_percentage:
+        :return:
+        """
         vector = np.reshape(image, -1)
         max_range = np.mean(np.abs(np.percentile(vector, [outlier_percentage, 100.0 - outlier_percentage])))
         vector = vector[vector < max_range]
@@ -17,9 +23,20 @@ class MaximumCorrentropyKalmanFilter(KalmanFilter):
         return np.mean(vector), np.std(vector), vector
 
     def inv_gauss(self, domain, sigma):
+        """
+
+        :param domain:
+        :param sigma:
+        :return:
+        """
         return np.exp((domain ** 2) / (2 * sigma ** 2))
 
     def chol2(self, P):
+        """
+
+        :param P:
+        :return:
+        """
         # Cholesky decomposition
         L = np.zeros(P.shape)
         L[0, :] = np.sqrt(P[0, :])
@@ -33,7 +50,16 @@ class MaximumCorrentropyKalmanFilter(KalmanFilter):
         return L, inv_L
 
     def correct_with_measurements(self, z, R, epsilon=1e-6, max_iter=10, silverman_sigma=False, report_graphs=False):
+        """
 
+        :param z:
+        :param R:
+        :param epsilon:
+        :param max_iter:
+        :param silverman_sigma:
+        :param report_graphs:
+        :return:
+        """
         # Obtain Cholesky decomposition
         L_p, inv_L_p = self.chol2(self.pred_state_cov)
 

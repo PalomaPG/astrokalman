@@ -11,7 +11,7 @@ class SNDetector(object):
     def __init__(self, n_consecutive_alerts=4, images_size=(4094, 2046), flux_thres=500.0, vel_flux_thres=150.0,
                  vel_satu=3000.0):
         """
-        An object that defines a supernova detector
+        An object that defines a supernova detector. Guarda todos los umbrales y trabaja con el KF y FH.
         :param n_consecutive_alerts:
         :param images_size:
         :param flux_thres:

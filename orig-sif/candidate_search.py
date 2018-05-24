@@ -24,22 +24,18 @@ FH = FITSHandler(RD)
 MJD = FH.MJD
 
 KF, SN = RD.deploy_filter_and_detector(MJD)
-
+# Si el SN_index significa que estamos en una SN de HiTS. por tanto preparamos un objeto observer
+# para crear estampillas de la  SN de HiTS en la primera corrida
 if RD.SN_index >= 0:
     OB = Observer(len(MJD), new_pos=RD.SN_pos)
 
 # First run: collect candidates
-
-"""for k in FH.data_names.keys():
-    print k
-    print np.array(FH.data_names[k])
-    print ''"""
-
-
+# Recorre arreglos de MJDs
 for o in range(len(MJD)):
     print 'Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD))
     
     ti = time()
+    # Que FH tenga listos los flujos para pasarlos a KF
     FH.load_fluxes(o)
     print 'Load and photometry time: ' + str(time()-ti)
     
@@ -48,6 +44,7 @@ for o in range(len(MJD)):
     print 'Update filter time: ' + str(time()-ti)
     
     ti = time()
+    # Detector...  Deteccion de candidatos
     SN.draw_complying_pixel_groups(o, FH, KF)
     print 'Draw groups time: ' + str(time()-ti)
     

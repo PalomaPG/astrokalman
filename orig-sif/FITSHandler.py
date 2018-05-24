@@ -13,10 +13,11 @@ class FITSHandler(object):
 
     def __init__(self, RD, accum_neg_flux_depth=4, accum_med_flux_depth=3):
         """
-        Fits image manager
-        :param RD: RunData instance
-        :param accum_neg_flux_depth:
-        :param accum_med_flux_depth:
+        Fits image manager. Se preocupa de recuperar todas las imagenes FITS.
+        Y determina flujos
+        :param RD: RunData instance. Toma los parametros que tiene la instancia de RunData
+        :param accum_neg_flux_depth: Decision de umbral
+        :param accum_med_flux_depth: Decicion de umbral
         """
         self.field = RD.field
         print RD.ccd
@@ -36,7 +37,8 @@ class FITSHandler(object):
 
     def get_data_names(self):
         """
-
+        construccion de diccionario self.data_names. Direcciones de todas las imagenes en la maquina.
+        Y construye arreglo de MJD de las observaciones.
         :return: Modified Julian day MJD
         """
 
@@ -152,9 +154,9 @@ class FITSHandler(object):
 
     def naylor_photometry(self, invvar):
         """
-
-        :param invvar:
-        :return:
+        Convoluciona flujos. Calcula flujo y su varianza
+        :param invvar: float matrix, Varianza de la imagen de diferencia
+        :return void:
         """
         input_1 = self.diff * invvar
         #print 'dimension input 1 @ naylor_photometry %d' % input_1.ndim
@@ -171,9 +173,9 @@ class FITSHandler(object):
 
     def load_fluxes(self, o):
         """
-
-        :param o:
-        :return:
+        Calcula datos de los flujos
+        :param o: int, indice de observacion
+        :return void:
         """
 
         self.science = fits.open(self.data_names['science'][o])[0].data
@@ -198,12 +200,21 @@ class FITSHandler(object):
         # Filter nan fluxes
         self.flux[np.isnan(self.flux)] = 0.001
 
-        # Register negative fluxes
+        # Register negative fluxes (bool cube), Matriz dim_x x dim_y x # observations
+        # Flujo negativo. Pixeles que tuvieron valores negativos
+        # Queremos descartar todos los candidatos que estuvieron cerca de un pixel
+        # negativo, ya que suelen ser candidatos de malas restas.
         self.accum_neg_flux[o % self.accum_neg_flux_depth, :] = self.flux < 0
 
+        # Hasta cierta cantidad de observaciones (accum_med_flux_depth), guarda valores de flujo
+        # para calcular la mediana de las imagenes de flujo.
+        # Los pixeles que tienen una mediana de flujo mayor a 1500, son descartados.
         # Accumulate fluxes for high initial median rejection
         if o < self.accum_med_flux_depth:
             self.accum_median_flux[o, :] = self.flux
-        elif o == self.accum_med_flux_depth:
+        elif o == self.accum_med_flux_depth: # Cubo de booleans
             self.median_rejection = np.median(self.accum_median_flux, 0) > 1500.0
+
+        # Hay pixeles que tienen valores muy altos de flujo en toda la corrida (el algoritmo puede 'confundirse'
+        # considerando la existencia de SN).
 

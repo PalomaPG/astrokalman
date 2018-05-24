@@ -15,13 +15,13 @@ class RunData(object):
                  n_params=0,
                  results_dir='.'):
         """
-
-        :param year:
-        :param only_HiTS_SN:
-        :param test_SN:
-        :param filter_type:
-        :param n_params:
-        :param results_dir:
+        Guarda parametros de la ejecucion
+        :param year: string, sn year (13,14,15)
+        :param only_HiTS_SN: bool, solo datos con sn de HiTS
+        :param test_SN: int, SN to test (no para leftraru)
+        :param filter_type: string, identifica filtro: Kalman, MCKF, etc
+        :param n_params: int, # veces que tiene que repetirse el algoritmo (solo leftraru)
+        :param results_dir: string, Directorio resultados
         """
         self.year = year
         # only CCDs with SN
@@ -73,8 +73,8 @@ class RunData(object):
 
     def apply_params(self):
         """
-
-        :return:
+        Setea los parametros segun la variable self.this_par
+        :return void:
         """
         # 4D grid (extract params)
         decomposing_parameter = self.this_par
@@ -87,9 +87,9 @@ class RunData(object):
 
     def deploy_filter_and_detector(self, MJD):
         """
-
-        :param MJD:
-        :return:
+        Prepara filtro y el detector, los objetos KF y SN
+        :param MJD: double array, modified julian date
+        :return: KF (filtro) y SN  (detector)
         """
         self.MJD = MJD
         if self.filter_type == 'kalman':
@@ -101,10 +101,11 @@ class RunData(object):
 
     def save_results(self, OB, results_dir='results'):
         """
-
-        :param OB:
-        :param results_dir:
-        :return:
+        Guarda resultados despues de aplicar filtro en la segunda pasada.
+        Si encuentra SNs
+        :param OB: Observer object. Para realizar graficos
+        :param results_dir: Directorio de resultados
+        :return void:
         """
         filename = self.field + '-' + self.resultccd + '_NUO-' + str(self.NUO).zfill(2)
         if self.SN_index >= 0:
@@ -115,8 +116,8 @@ class RunData(object):
 
     def decide_second_run(self, OB):
         """
-
-        :param OB:
+        Decide si va a correr el algoritmo nuevamente para recuperar los objetos detectados.
+        :param OB: Observer object
         :return:
         """
         #number of unknown object (NUO)
@@ -129,4 +130,5 @@ class RunData(object):
             SN_data['epochs'] = []
             SN_data['status'] = self.SN_index + 1
             self.CandData += [SN_data]
+
 

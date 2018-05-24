@@ -12,28 +12,33 @@ class SNDetector(object):
                  vel_satu=3000.0):
         """
         An object that defines a supernova detector. Guarda todos los umbrales y trabaja con el KF y FH.
-        :param n_consecutive_alerts:
-        :param images_size:
-        :param flux_thres:
-        :param vel_flux_thres:
-        :param vel_satu:
+        Prepara coordenadas de candidatos (guarda en lista CandData).
+
+        :param n_consecutive_alerts: # alertas consecutivas, para que un objeto sea considerado una supernova con seguridad.
+        :param images_size: int tuple,  dimensiones en pixeles (x, y)
+        :param flux_thres: float, umbral de flujo
+        :param vel_flux_thres: float, umbral  de velocidad de flujo
+        :param vel_satu: float, saturacion ...
         """
-        # n_consecutive_alers -> 4 epochs ago
-        self.n_conditions = 7
+        self.n_conditions = 7 # # de condiciones para considerar un pixel como parte de una SN
         self.n_consecutive_alerts = n_consecutive_alerts
         self.pixel_conditions = np.zeros(tuple([self.n_conditions]) + images_size, dtype=bool)
+        # guarda la info para cada pixel (cuales condiciones cumple cada pixel)
         self.pixel_flags = np.zeros(images_size, dtype=int)
+        #  Suma binaria de pixel conditions
         self.accum_compliant_pixels = np.zeros(tuple([self.n_consecutive_alerts]) + images_size, dtype=bool)
+        #
         self.CandData = []
+
         self.flux_thres = flux_thres
         self.vel_flux_thres = vel_flux_thres
         self.vel_satu = vel_satu
 
     def subsampled_median(self, image, sampling):
         """
-
-        :param image:
-        :param sampling:
+        Obtiene la mediana de subimagenes de image
+        :param image: float matrix, Imagen de entrada
+        :param sampling: int,
         :return:
         """
         size1 = 4094
@@ -53,31 +58,37 @@ class SNDetector(object):
 
     def pixel_discrimination(self, o, FH, KF):
         """
-
-        :param o:
-        :param FH:
-        :param KF:
-        :return:
+        Discrimiancion de pixeles por separado
+        :param o:  Indice de observacion
+        :param FH: FitsHandler instance
+        :param KF: KalmanFilter instance
+        :return: void
         """
-
-        epoch_science_median = self.subsampled_median(FH.science, 20)
+        # obtencion de mediana de imagen science (tomando submuestras)
+        epoch_science_median = self.subsampled_median(FH.science, 20) # float
 
         self.pixel_conditions[:] = False
         self.pixel_flags[:] = 0
 
+        # Si el flujo estimado por KF es mayor al umbral de flujo
         self.pixel_conditions[0, :] = KF.state[0, :] > self.flux_thres
-        print '----------------------------------------------------'
-        print self.flux_thres
-        print np.isnan(KF.state[1, :]).any()
-        print '----------------------------------------------------'
+        #print '----------------------------------------------------'
+        #print self.flux_thres
+        #print np.isnan(KF.state[1, :]).any()
+        #print '----------------------------------------------------'
 
+        # Velocidad de flujo estimada mayor a umbral de velocidad de flujo
         self.pixel_conditions[1, :] = KF.state[1, :] > self.vel_flux_thres * (
                     self.vel_satu - np.minimum(KF.state[0, :], self.vel_satu)) / self.vel_satu
-        self.pixel_conditions[2, :] = FH.science > epoch_science_median + 5
-        self.pixel_conditions[3, :] = KF.state_cov[0, :] < 150.0
-        self.pixel_conditions[4, :] = KF.state_cov[2, :] < 150.0
-        self.pixel_conditions[5, :] = np.logical_not(FH.dil_base_mask)
-        self.pixel_conditions[6, :] = np.logical_not(FH.median_rejection)
+
+        self.pixel_conditions[2, :] = FH.science > epoch_science_median + 5 # umbral estimado para considerar
+        #  pixeles + brillantes que el cielo
+
+        # DESCARTE DE PIXELES DEFECTUOSOS
+        self.pixel_conditions[3, :] = KF.state_cov[0, :] < 150.0 # varianza de  flujo
+        self.pixel_conditions[4, :] = KF.state_cov[2, :] < 150.0 # varianza de vel. flujo
+        self.pixel_conditions[5, :] = np.logical_not(FH.dil_base_mask) #
+        self.pixel_conditions[6, :] = np.logical_not(FH.median_rejection) #
 
         for i in range(self.n_conditions):
             self.pixel_flags[np.logical_not(self.pixel_conditions[i, :])] += 2 ** i
@@ -196,11 +207,13 @@ class SNDetector(object):
 
     def draw_complying_pixel_groups(self, o, FH, KF):
         """
-
-        :param o:
-        :param FH:
-        :param KF:
-        :return:
+        Forma grupos de pixeles que cumple las condiciones individualmente
+        1. Hace pasar por separado por umbrales
+        2. ..por grupos
+        :param o: Indice de observacion
+        :param FH: instancia de FitsHandler
+        :param KF: instancia de KalmanFilter
+        :return: void
         """
 
         # Discriminate every pixel by itself

@@ -84,10 +84,48 @@ class FITSHandler(object):
                 self.data_names['aflux'] += [np.sort(glob(
                     '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/match_*' + epoch + '-02.npy')).tolist()[
                                                  0]]
+        elif(glob('C:\Users\pablo')):
+            
+
+            print 'At Pablo'
+
+            # baseDir = '/run/media/tesla/Almacen/Huentelemu/R20' + year + 'CCDs/HiTS' + str(snIndex).zfill(2) + 'SN/'
+            baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_01/S25/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
+            # baseDir = 'C:/Users/Bahamut/Desktop/HiTS' + str(self.SN_index+1).zfill(2) + 'SN/'
+            # baseDir = 'D:/Lab Int Comp/R2015CCDs/HiTS' + str(self.SN_index+1).zfill(2) + 'SN/'
+
+            self.data_names['base'] = glob(baseDir+'Blind15A_01_S25_*_image.fits.fz')[0]
+            self.data_names['mask_dq'] = glob(baseDir+'Blind15A_01_S25_*_dqmask.fits.fz')[0]
+
+            self.data_names['base_crblaster'] = glob(baseDir+'Blind15A_01_S25_*_image_crblaster.fits')[0]
+            self.data_names['science'] = glob(baseDir+'Blind15A_01_S25_*_image_crblaster_grid02_lanczos2.fits')
+
+            self.data_names['diff'] = []
+            self.data_names['psf'] = []
+            self.data_names['invVAR'] = []
+            self.data_names['aflux'] = []
+
+            for science_filename in self.data_names['science']:
+                ind = science_filename.find('_image_')
+                epoch = science_filename[ind - 2:ind]
+                print epoch
+
+                self.data_names['diff'] += [np.sort(glob(baseDir + 'Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
+
+                # [baseDir+'Diff_Blind15A_01_S25_03-02t_grid02_lanczos2.fits']
+                self.data_names['psf'] += [np.sort(glob(baseDir + 'CALIBRATION/psf*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
+                print self.data_names['psf']
+                #[baseDir+'CALIBRATION/'+'psf_Blind15A_01_S25_03-02t_grid02_lanczos2.npy']
+                self.data_names['invVAR'] += [np.sort(glob(baseDir + 'invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
+                #[baseDir+'invVAR_Blind15A_01_S25_03-02t_grid02_lanczos2.fits']
+                self.data_names['aflux'] += [np.sort(glob(baseDir + 'CALIBRATION/match_*' + epoch + '-02.npy')).tolist()[0]]
+
+                #[baseDir+'CALIBRATION/'+'match_Blind15A_01_S25_03-02.npy']
+                
         else:
-
-            print 'At CMM'
-
+            
+            print 'At Paloma'
+            
             # baseDir = '/run/media/tesla/Almacen/Huentelemu/R20' + year + 'CCDs/HiTS' + str(snIndex).zfill(2) + 'SN/'
             baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_01/S25/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
             # baseDir = 'C:/Users/Bahamut/Desktop/HiTS' + str(self.SN_index+1).zfill(2) + 'SN/'

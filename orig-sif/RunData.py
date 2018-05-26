@@ -54,7 +54,7 @@ class RunData(object):
             self.this_par = self.index / n_CCDs
             self.index = self.index % n_CCDs
 
-        self.SN_table = np.loadtxt('./orig-sif/ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
+        self.SN_table = np.loadtxt('./ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
 
         self.images_size = (4094, 2046)
 

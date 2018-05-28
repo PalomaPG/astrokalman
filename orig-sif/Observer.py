@@ -245,7 +245,7 @@ class Observer(object):
         plt.title('Base mask')
         plt.axis('off')
 
-        fig.tight_layout()
+        plt.tight_layout()
 
         if len(save_filename) > 0:
             plt.savefig(save_filename + '_stamps', bbox_inches='tight')

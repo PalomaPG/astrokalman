@@ -109,7 +109,7 @@ class MaximumCorrentropyKalmanFilter(KalmanFilter):
             iter_state = self.pred_state + self.kalman_gain * (z - self.pred_state[0, :])
 
             # Check stop conditions
-            print 'MCKF correction iteration: ' + str(self.n_iter)
+            print('MCKF correction iteration: ' + str(self.n_iter))
             stopped_pixels = np.linalg.norm(iter_state - prev_iter_state, axis=0) <= np.linalg.norm(prev_iter_state,
                                                                                                     axis=0) * epsilon
             # print 'Remaining pixels: ' +str(4096.0*2048.0-len(np.nonzero(stopped_pixels)[0]))

@@ -44,8 +44,8 @@ class SNDetector(object):
         size1 = 4094
         size2 = 2046
         margin = 100
-        yAxis = xrange(margin, size1 - margin, sampling)
-        xAxis = xrange(margin, size2 - margin, sampling)
+        yAxis = range(margin, size1 - margin, sampling)
+        xAxis = range(margin, size2 - margin, sampling)
         sampled_image = np.zeros((len(yAxis), len(xAxis)))
         x = 0
         for i in yAxis:
@@ -225,8 +225,8 @@ class SNDetector(object):
         # Filter groups by morphological analysis
         self.filter_groups(FH, KF)
 
-        print '  Pixel Groups: ' + str(self.PGData['mid_coords'].shape[0])
-        print '  Filtered Pixel Groups: ' + str(len(np.nonzero(self.PGData['group_flags'] == 0)[0]))
+        print(' Pixel Groups: ' + str(self.PGData['mid_coords'].shape[0]))
+        print(' Filtered Pixel Groups: ' + str(len(np.nonzero(self.PGData['group_flags'] == 0)[0])))
 
     def update_candidates(self, o):
         """

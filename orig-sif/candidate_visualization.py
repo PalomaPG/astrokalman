@@ -11,7 +11,7 @@ results_dir = '/home/paloma/Documents/Memoria/Code/sif2/'
 
 #all_results = glob(results_dir + param + 'HiTS' + HiTS + '*.npz')
 all_results = glob(results_dir + '*.npz')
-print all_results
+print(all_results)
 
 for result_name in all_results:
     
@@ -25,11 +25,11 @@ for result_name in all_results:
     HiTSSN = result_name[result_name.find('HiTS')+4:result_name.find('HiTS')+6]
     
     filename = '/home/paloma/Documents/Memoria/Code/sif2/orig-sif/images/' + param + 'HiTS' + HiTSSN
-    print filename
+    print(filename)
     ''
-    print SN_found
+    print(SN_found)
     new_obs.print_lightcurve(save_filename=filename, SN_found=SN_found)
     new_obs.print_stamps(save_filename=filename, SN_found=SN_found)
     
     for obj in objects:
-        print str(obj['epochs'])+' '+str(obj['posY'])+'-'+str(obj['posX'])+' '+str(obj['status'])
+        print(str(obj['epochs'])+' '+str(obj['posY'])+'-'+str(obj['posX'])+' '+str(obj['status']))

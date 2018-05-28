@@ -45,7 +45,7 @@ class RunData(object):
             self.index = int(sys.argv[1])
         else:
             # specific SN (test_SN)
-            print test_SN
+            #print test_SN
             self.index = test_SN
             #n_params = 0
 
@@ -60,11 +60,10 @@ class RunData(object):
 
         if self.only_HiTS_SN:
             self.SN_index = self.index
-            print self.SN_index
+            #print self.SN_index
             self.SN_pos = self.SN_table[self.SN_index, [5, 6]].astype(int)
             self.field = self.SN_table[self.SN_index, 3]
             self.ccd = self.SN_table[self.SN_index, 4]
-            print 'holiiiii %s' %  self.ccd
             self.resultccd = self.ccd[0] + self.ccd[1:].zfill(2)
         else:
             self.SN_index = -1

@@ -15,7 +15,7 @@ n_params = 32
 RD = RunData(year=year, n_params=n_params)
 #RD = SIF.RunData(year=year,only_HiTS_SN=only_HiTS_SN,n_params=n_params,filter_type='MCC')
 if RD.n_params > 0:
-    print 'apply params'
+    print('apply params')
     RD.apply_params()
 
 init = time()
@@ -32,34 +32,34 @@ if RD.SN_index >= 0:
 # First run: collect candidates
 # Recorre arreglos de MJDs
 for o in range(len(MJD)):
-    print 'Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD))
+    print('Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD)))
     
     ti = time()
     # Que FH tenga listos los flujos para pasarlos a KF
     FH.load_fluxes(o)
-    print 'Load and photometry time: ' + str(time()-ti)
+    print('Load and photometry time: ' + str(time()-ti))
     
     ti = time()
     KF.update(MJD[o],FH)
-    print 'Update filter time: ' + str(time()-ti)
+    print('Update filter time: ' + str(time()-ti))
     
     ti = time()
     # Detector...  Deteccion de candidatos
     SN.draw_complying_pixel_groups(o, FH, KF)
-    print 'Draw groups time: ' + str(time()-ti)
+    print('Draw groups time: ' + str(time()-ti))
     
     SN.update_candidates(o)
     
     if RD.SN_index>=0:
         OB.rescue_run_data(o,FH,KF,SN)
     
-    print ''
+    print('')
     
 # Classify new candidates
 SN.check_candidates(RD)
 
-print 'SN ' + ['not found ','found '][RD.SN_found]
-print 'Number of unidentified objects: ' + str(RD.NUO)
+print('SN ' + ['not found ','found '][RD.SN_found])
+print('Number of unidentified objects: ' + str(RD.NUO))
 
 # Evaluate worth of second run
 RD.decide_second_run(OB)
@@ -75,7 +75,7 @@ update_filter_time = 0
 draw_groups_time = 0
 
 for o in range(len(MJD)):
-    print 'Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD))
+    print('Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD)))
     
     ti = time()
     FH.load_fluxes(o)
@@ -91,11 +91,11 @@ for o in range(len(MJD)):
     
     OB.rescue_run_data(o, FH, KF, SN)
     
-    print ''
+    print('')
 
 RD.save_results(OB)
 
-print 'Total time: '+str(time()-init)
-print 'Loading photometry: %s\n' % str(load_photometry_time)
-print 'Updating filter: %s\n' % str(update_filter_time)
-print 'Drawing groups: %s\n' % str(draw_groups_time)
+print('Total time: '+str(time()-init))
+print('Loading photometry: %s\n' % str(load_photometry_time))
+print('Updating filter: %s\n' % str(update_filter_time))
+print('Drawing groups: %s\n' % str(draw_groups_time))

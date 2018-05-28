@@ -20,7 +20,7 @@ class FITSHandler(object):
         :param accum_med_flux_depth: Decicion de umbral
         """
         self.field = RD.field
-        print RD.ccd
+        #print RD.ccd
         self.ccd = RD.ccd
         self.year = RD.year
         self.SN_index = RD.SN_index
@@ -46,7 +46,7 @@ class FITSHandler(object):
         base_dir = '/home/apps/astro/data/ARCHIVE/'
 
         if glob('/home/phuente/MCKF'):  # At Leftraru
-            print 'At Leftraru'
+            print('At Leftraru')
 
             self.data_names['base'] = \
             sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*_image.fits*'))[
@@ -86,7 +86,7 @@ class FITSHandler(object):
                                                  0]]
         elif(glob):
 
-            print 'At Pablo'
+            print('At Pablo')
 
             # baseDir = '/run/media/tesla/Almacen/Huentelemu/R20' + year + 'CCDs/HiTS' + str(snIndex).zfill(2) + 'SN/'
             baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_38/S25/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
@@ -107,13 +107,13 @@ class FITSHandler(object):
             for science_filename in self.data_names['science']:
                 ind = science_filename.find('_image_')
                 epoch = science_filename[ind - 2:ind]
-                print epoch
+                #print epoch
 
                 self.data_names['diff'] += [np.sort(glob(baseDir + 'Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
 
                 # [baseDir+'Diff_Blind15A_38_S25_03-02t_grid02_lanczos2.fits']
                 self.data_names['psf'] += [np.sort(glob(baseDir + 'CALIBRATION/psf*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
-                print self.data_names['psf']
+                #print self.data_names['psf']
                 #[baseDir+'CALIBRATION/'+'psf_Blind15A_38_S25_03-02t_grid02_lanczos2.npy']
                 self.data_names['invVAR'] += [np.sort(glob(baseDir + 'invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
                 #[baseDir+'invVAR_Blind15A_38_S25_03-02t_grid02_lanczos2.fits']
@@ -121,7 +121,7 @@ class FITSHandler(object):
 
                 #[baseDir+'CALIBRATION/'+'match_Blind15A_38_S25_03-02.npy']
 
-            print 'At Paloma'
+            print('At Paloma')
 
             # baseDir = '/run/media/tesla/Almacen/Huentelemu/R20' + year + 'CCDs/HiTS' + str(snIndex).zfill(2) + 'SN/'
             baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_38/S25/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
@@ -142,13 +142,13 @@ class FITSHandler(object):
             for science_filename in self.data_names['science']:
                 ind = science_filename.find('_image_')
                 epoch = science_filename[ind - 2:ind]
-                print epoch
+                #print epoch
 
                 self.data_names['diff'] += [np.sort(glob(baseDir + 'Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
 
                 # [baseDir+'Diff_Blind15A_38_S25_03-02t_grid02_lanczos2.fits']
                 self.data_names['psf'] += [np.sort(glob(baseDir + 'CALIBRATION/psf*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
-                print self.data_names['psf']
+                #print self.data_names['psf']
                 #[baseDir+'CALIBRATION/'+'psf_Blind15A_38_S25_03-02t_grid02_lanczos2.npy']
                 self.data_names['invVAR'] += [np.sort(glob(baseDir + 'invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
                 #[baseDir+'invVAR_Blind15A_38_S25_03-02t_grid02_lanczos2.fits']

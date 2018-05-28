@@ -51,7 +51,10 @@ class RunData(object):
 
         self.n_params = n_params
         if self.n_params > 0:
-            self.this_par = self.index / n_CCDs
+            print(self.index)
+            print(n_CCDs)
+            self.this_par = int(self.index / n_CCDs)
+            print(int(self.this_par))
             self.index = self.index % n_CCDs
 
         self.SN_table = np.loadtxt('./ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
@@ -77,11 +80,13 @@ class RunData(object):
         """
         # 4D grid (extract params)
         decomposing_parameter = self.this_par
+        print(self.this_par)
         self.filter_type = ['kalman', 'MCC'][decomposing_parameter % 2]
-        decomposing_parameter = decomposing_parameter / 2
+        #decomposing_parameter = decomposing_parameter / 2
+        decomposing_parameter = int(decomposing_parameter / 2)
         # Change threshold
         self.flux_thres = [250, 375, 500, 625][decomposing_parameter % 4]
-        decomposing_parameter = decomposing_parameter / 4
+        decomposing_parameter = int(decomposing_parameter / 4)
         self.vel_flux_thres = [0, 75, 150, 225][decomposing_parameter % 4]
 
     def deploy_filter_and_detector(self, MJD):

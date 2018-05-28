@@ -3,8 +3,8 @@
 # SIF: Stream Images Filtering
 
 import numpy as np
-import pymorph as pm
-
+#import pymorph as pm
+import mahotas as mh
 
 class SNDetector(object):
 
@@ -110,7 +110,9 @@ class SNDetector(object):
             self.PGData['mid_coords'] = np.zeros((0, 2), dtype=int)
             return
 
-        labeled_image = pm.label(alert_pixels, Bc=np.ones((3, 3), dtype=bool))
+        #labeled_image = pm.label(alert_pixels, Bc=np.ones((3, 3), dtype=bool))
+        labeled_image, nr_objects = mh.label(alert_pixels, Bc=np.ones((3, 3), dtype=int))
+        print(labeled_image[0])
 
         LICoords = np.nonzero(labeled_image)
         LIValues = labeled_image[LICoords]
@@ -154,7 +156,8 @@ class SNDetector(object):
             LMSR = 3
             a, b = posY - LMSR + 1, posY + LMSR + 2
             c, d = posX - LMSR + 1, posX + LMSR + 2
-            scienceLM = pm.regmax(FH.science[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
+            #scienceLM = pm.regmax(FH.science[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
+            scienceLM = mh.regmax(FH.science[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             if not np.any(scienceLM[1:-1, 1:-1]):
                 self.PGData['group_flags'][i] += 2
 
@@ -162,7 +165,8 @@ class SNDetector(object):
             LMSR = 3
             a, b = posY - LMSR + 1, posY + LMSR + 2
             c, d = posX - LMSR + 1, posX + LMSR + 2
-            fluxLM = pm.regmax(FH.flux[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
+            #fluxLM = pm.regmax(FH.flux[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
+            fluxLM = mh.regmax(FH.flux[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             if not np.any(fluxLM[1:-1, 1:-1]):
                 self.PGData['group_flags'][i] += 4
 
@@ -170,7 +174,8 @@ class SNDetector(object):
             LMSR = 3
             a, b = posY - LMSR + 1, posY + LMSR + 2
             c, d = posX - LMSR + 1, posX + LMSR + 2
-            velLM = pm.regmax(KF.state[1, a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
+            #velLM = pm.regmax(KF.state[1, a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
+            velLM = mh.regmax(KF.state[1, a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             if not np.any(velLM[1:-1, 1:-1]):
                 self.PGData['group_flags'][i] += 8
 

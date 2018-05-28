@@ -32,7 +32,9 @@ class KalmanFilter(object):
 
         # Preparacion de covarianza estimada (3 varianzas): flujo, entre flujo y velocidad de flujo,
         #  y varianza de velocidad
-        self.state_cov = np.zeros(tuple([self.num_cov_elements]) + images_size)
+
+        print(tuple([self.num_cov_elements]) + images_size)
+        self.state_cov = np.zeros(tuple([int(self.num_cov_elements)]) + images_size, dtype=int)
         # Se asume inicialmente independencia, pero el filtro determinara si hay o no correlacion.
         self.state_cov[[0, 2], :] = initial_variance
 

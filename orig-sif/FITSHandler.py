@@ -6,8 +6,8 @@ import numpy as np
 from glob import glob
 from astropy.io import fits
 import scipy.ndimage as spn
-import pymorph as pm
-
+#import pymorph as pm
+import mahotas as mh
 
 class FITSHandler(object):
 
@@ -166,7 +166,8 @@ class FITSHandler(object):
         dil base mask es una imagen de 0s y 1s?. No se si es la version nueva de python 2.7, o del modulo dilate que no
         pesca el input
         '''
-        self.dil_base_mask = pm.dilate(self.base_mask > 0, B=np.ones((5, 5), dtype=bool))
+        #self.dil_base_mask = pm.dilate(self.base_mask > 0, B=np.ones((5, 5), dtype=bool))
+        self.dil_base_mask = mh.dilate(self.base_mask > 0, Bc=np.ones((5, 5), dtype=bool))
 
         MJD = [float(fits.open(m)[0].header['MJD-OBS']) for m in self.data_names['science']]
         # Order by MJD
@@ -179,7 +180,8 @@ class FITSHandler(object):
         MJDOrder = MJDOrder[airmass < 1.7]
 
         for e in ['science', 'diff', 'invVAR', 'psf', 'aflux']:
-            if self.data_names.has_key(e):
+            if e in self.data_names:
+            #if self.data_names.has_key(e):
                 self.data_names[e] = [self.data_names[e][i] for i in MJDOrder]
 
         self.data_names['original_numFrames'] = len(MJD)

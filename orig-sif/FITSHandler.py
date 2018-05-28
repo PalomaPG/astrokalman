@@ -43,9 +43,9 @@ class FITSHandler(object):
         """
 
         self.data_names = {}
-        base_dir = '/home/apps/astro/data/ARCHIVE/'
+        base_dir = '/home/apps/astro/data/DATA/'
 
-        if glob('/home/phuente/MCKF'):  # At Leftraru
+        if glob('/home/pperez/Thesis/sif2/orig-sif'):  # At Leftraru
             print('At Leftraru')
 
             self.data_names['base'] = \

@@ -28,7 +28,7 @@ class RunData(object):
         self.only_HiTS_SN = only_HiTS_SN
 
         # Asking if i am @leftraru
-        self.at_leftraru = bool(glob('/home/phuente/'))
+        self.at_leftraru = bool(glob('/home/pperez/'))
 
         self.results_dir = results_dir
 
@@ -67,6 +67,7 @@ class RunData(object):
             self.SN_pos = self.SN_table[self.SN_index, [5, 6]].astype(int)
             self.field = self.SN_table[self.SN_index, 3]
             self.ccd = self.SN_table[self.SN_index, 4]
+            print(self.ccd)
             self.resultccd = self.ccd[0] + self.ccd[1:].zfill(2)
         else:
             self.SN_index = -1

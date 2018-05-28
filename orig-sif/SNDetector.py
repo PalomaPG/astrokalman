@@ -3,7 +3,6 @@
 # SIF: Stream Images Filtering
 
 import numpy as np
-#import pymorph as pm
 import mahotas as mh
 
 class SNDetector(object):

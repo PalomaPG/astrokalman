@@ -17,5 +17,5 @@ echo "SLURM_NNODES"=$SLURM_NNODES
 echo "SLURMTMPDIR="$SLURMTMPDIR
 echo "working directory="$SLURM_SUBMIT_DIR
 
-python candidate_search.py $SLURM_ARRAY_TASK_ID
+python -m cProfile -o profile_output candidate_search.py
 echo "Trabajo terminado";

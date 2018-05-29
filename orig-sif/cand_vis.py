@@ -102,4 +102,4 @@ for sn in range(93):
             
                 
                 
-print 'Time: ' + str(time()-init_time)
+print('Time: ' + str(time()-init_time))

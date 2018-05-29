@@ -8,7 +8,9 @@
 #SBATCH --array=0-2975
 #SBATCH --exclusive=user
 
-module load astro
+module load Lmod/6.5
+source $LMOD_PROFILE
+ml icc/2017.4.196-GCC-6.4.0-2.28 impi/2017.3.196 Python/3.6.3
 
 echo $SLURM_ARRAY_TASK_ID;
 echo "SLURM_JOBID="$SLURM_JOBID
@@ -17,5 +19,5 @@ echo "SLURM_NNODES"=$SLURM_NNODES
 echo "SLURMTMPDIR="$SLURMTMPDIR
 echo "working directory="$SLURM_SUBMIT_DIR
 
-python -m cProfile -o profile_output candidate_search.py
+python -m cProfile -o profile_sif candidate_search.py
 echo "Trabajo terminado";

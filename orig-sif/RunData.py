@@ -1,6 +1,7 @@
 import numpy as np
 from glob import glob
 import sys
+import os
 
 from SNDetector import SNDetector
 from KalmanFilter import KalmanFilter
@@ -13,7 +14,7 @@ class RunData(object):
                  test_SN=92,
                  filter_type='kalman',
                  n_params=0,
-                 results_dir='.'):
+                 results_dir='./results/'):
         """
         Guarda parametros de la ejecucion
         :param year: string, sn year (13,14,15)
@@ -31,6 +32,8 @@ class RunData(object):
         self.at_leftraru = bool(glob('/home/pperez/'))
 
         self.results_dir = results_dir
+        if not os.path.exists(self.results_dir):
+            os.makedirs(self.results_dir)
 
         if only_HiTS_SN:
             n_CCDs = 93
@@ -104,7 +107,7 @@ class RunData(object):
         SN = SNDetector(flux_thres=self.flux_thres, vel_flux_thres=self.vel_flux_thres)
         return KF, SN
 
-    def save_results(self, OB, results_dir='results'):
+    def save_results(self, OB):
         """
         Guarda resultados despues de aplicar filtro en la segunda pasada.
         Si encuentra SNs
@@ -117,7 +120,7 @@ class RunData(object):
             filename = 'HiTS' + str(self.SN_index + 1).zfill(2) + '-' + ['nay', 'AYE'][self.SN_found] + '_' + filename
         if self.n_params > 0:
             filename = 'par-' + str(self.this_par).zfill(2) + '_' + filename
-        np.savez(self.results_dir + '/' + filename, objects=OB.obj)
+        np.savez(self.results_dir +  filename, objects=OB.obj)
 
     def decide_second_run(self, OB):
         """

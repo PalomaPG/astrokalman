@@ -78,9 +78,9 @@ class FITSHandler(object):
                     base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
                                                   0]]
                 print('PSF...')
-                print(glob(
-                    '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' +
-                    self.field + '/' + self.ccd + '/CALIBRATIONS/psf*' + self.ccd + '_' + epoch + '*grid02*'))
+                #print(glob(
+                #    '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' +
+                #    self.field + '/' + self.ccd + '/CALIBRATIONS/psf*' + self.ccd + '_' + epoch + '*grid02*'))
 
                 # diff image psf
                 self.data_names['psf'] += [np.sort(glob(
@@ -91,6 +91,9 @@ class FITSHandler(object):
                 self.data_names['aflux'] += [np.sort(glob(
                     '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/match_*' + epoch + '-02.npy')).tolist()[
                                                  0]]
+
+            print('loop end :) ')
+
         else:
 
             print('At Pablo')
@@ -163,7 +166,7 @@ class FITSHandler(object):
 
                 #[baseDir+'CALIBRATION/'+'match_Blind15A_38_S25_03-02.npy']
 
-        # Prepare base image
+        print('Prepare base image')
 
         #self.base_image = fits.open(self.data_names['base'])
         self.base_image = fits.open(self.data_names['base'])[0].data
@@ -176,12 +179,13 @@ class FITSHandler(object):
         #self.dil_base_mask = pm.dilate(self.base_mask > 0, B=np.ones((5, 5), dtype=bool))
         self.dil_base_mask = mh.dilate(self.base_mask > 0, Bc=np.ones((5, 5), dtype=bool))
 
+        print('MJD...')
         MJD = [float(fits.open(m)[0].header['MJD-OBS']) for m in self.data_names['science']]
         # Order by MJD
         MJDOrder = np.argsort(MJD)
         MJD = np.array([MJD[i] for i in MJDOrder])
 
-        # Filter airmass
+        print('Filter airmass')
         airmass = np.array([float(fits.open(m)[0].header['AIRMASS']) for m in self.data_names['science']])
         MJD = MJD[airmass < 1.7]
         MJDOrder = MJDOrder[airmass < 1.7]
@@ -195,6 +199,7 @@ class FITSHandler(object):
         self.data_names['original_MJD'] = MJD
 
         self.MJD = MJD
+        print('End of get data names')
 
     def naylor_photometry(self, invvar):
         """

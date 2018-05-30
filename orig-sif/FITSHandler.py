@@ -47,20 +47,19 @@ class FITSHandler(object):
 
         if glob('/home/pperez/Thesis/sif2/orig-sif'):  # At Leftraru
             print('At Leftraru')
-            print(glob(base_dir + 'Blind' + self.year + 'A_' + self.field))
+            #print(glob(base_dir + 'Blind' + self.year + 'A_' + self.field+'/*/Blind*_image.fits.fz'))
 
             self.data_names['base'] = \
-            sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*_image.fits*'))[
+            sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*_image.fits*'))[
                 0]
 
-            self.data_names['mask_dq'] = sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*_dqmask.fits*'))[
+            self.data_names['mask_dq'] = sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*_dqmask.fits*'))[
                 0]
             self.data_names['base_crblaster'] = sorted(glob(
-                base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*image_crblaster.fits*'))[
-                0]
+                base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*image_crblaster.fits*'))[0]
             # projection
             self.data_names['science'] = sorted(glob(
-                base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*image_crblaster_grid02_lanczos2.fits'))
+                base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*image_crblaster_grid02_lanczos2.fits'))
 
             self.data_names['diff'] = []
             self.data_names['invVAR'] = []
@@ -72,11 +71,11 @@ class FITSHandler(object):
                 epoch = science_filename[ind - 2:ind]
                 # difference image
                 self.data_names['diff'] += [np.sort(glob(
-                    base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
+                    base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
                                                 0]]
                 # 1/var pf diff image
                 self.data_names['invVAR'] += [np.sort(glob(
-                    base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
+                    base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
                                                   0]]
 
                 # diff image psf

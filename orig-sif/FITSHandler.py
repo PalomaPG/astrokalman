@@ -47,7 +47,7 @@ class FITSHandler(object):
 
         if glob('/home/pperez/Thesis/sif2/orig-sif'):  # At Leftraru
             print('At Leftraru')
-            print(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd)
+            print(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd))
 
             self.data_names['base'] = \
             sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*_image.fits*'))[

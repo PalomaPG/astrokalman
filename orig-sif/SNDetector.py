@@ -77,33 +77,33 @@ class SNDetector(object):
         #print '----------------------------------------------------'
 
         # Velocidad de flujo estimada mayor a umbral de velocidad de flujo
-        self.pixel_conditions[1, :] = KF.state[1, :] > self.vel_flux_thres * (
-                    self.vel_satu - np.minimum(KF.state[0, :], self.vel_satu)) / self.vel_satu
+        self.pixel_conditions[1, :] = KF.state[1, :] > (self.vel_flux_thres * (
+                    self.vel_satu - np.minimum(KF.state[0, :], self.vel_satu)) / self.vel_satu)
 
         self.pixel_conditions[2, :] = FH.science > epoch_science_median + 5 # umbral estimado para considerar
         #  pixeles + brillantes que el cielo
 
-        # DESCARTE DE PIXELES DEFECTUOSOS
+        # DESCARTE DE PIXELES RUIDOSOS
         self.pixel_conditions[3, :] = KF.state_cov[0, :] < 150.0 # varianza de  flujo
         self.pixel_conditions[4, :] = KF.state_cov[2, :] < 150.0 # varianza de vel. flujo
-        self.pixel_conditions[5, :] = np.logical_not(FH.dil_base_mask) #
+        self.pixel_conditions[5, :] = np.logical_not(FH.dil_base_mask) # descarte defectuosos
         self.pixel_conditions[6, :] = np.logical_not(FH.median_rejection) #
 
         for i in range(self.n_conditions):
             self.pixel_flags[np.logical_not(self.pixel_conditions[i, :])] += 2 ** i
 
-        self.accum_compliant_pixels[o % self.n_consecutive_alerts, :] = self.pixel_flags == 0
+        self.accum_compliant_pixels[o % self.n_consecutive_alerts, :] = (self.pixel_flags == 0)
 
     def neighboring_pixels(self):
         """
-
+        Agrupa segun vecindario
         :return:
         """
 
         self.PGData = {}  # Pixel group data
         self.PGData['pixel_coords'] = []
 
-        alert_pixels = np.all(self.accum_compliant_pixels, 0)
+        alert_pixels = np.all(self.accum_compliant_pixels, 0) # 0 -> selected dim
 
         if not np.any(alert_pixels):
             self.PGData['mid_coords'] = np.zeros((0, 2), dtype=int)

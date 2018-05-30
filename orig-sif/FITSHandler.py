@@ -50,10 +50,13 @@ class FITSHandler(object):
 
             self.data_names['base'] = \
             sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*_image.fits*'))[
-                2]
+                0]
+
+            self.data_names['mask_dq'] = sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*_dqmask.fits*'))[
+                0]
             self.data_names['base_crblaster'] = sorted(glob(
                 base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*image_crblaster.fits*'))[
-                2]
+                0]
             # projection
             self.data_names['science'] = sorted(glob(
                 base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/' + self.ccd + '/Blind*image_crblaster_grid02_lanczos2.fits'))
@@ -84,7 +87,7 @@ class FITSHandler(object):
                 self.data_names['aflux'] += [np.sort(glob(
                     '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/match_*' + epoch + '-02.npy')).tolist()[
                                                  0]]
-        elif(glob):
+        else:
 
             print('At Pablo')
 

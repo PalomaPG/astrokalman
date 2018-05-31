@@ -42,6 +42,7 @@ class FITSHandler(object):
         :return: Modified Julian day MJD
         """
 
+        print('@get_data_names')
         self.data_names = {}
         base_dir = '/home/apps/astro/data/DATA/'
 
@@ -65,6 +66,7 @@ class FITSHandler(object):
             self.data_names['invVAR'] = []
             self.data_names['psf'] = []
             self.data_names['aflux'] = []
+            print('first for...')
 
             for science_filename in self.data_names['science']:
                 ind = science_filename.find('_image_')

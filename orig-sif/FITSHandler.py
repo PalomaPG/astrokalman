@@ -77,7 +77,7 @@ class FITSHandler(object):
                 self.data_names['invVAR'] += [np.sort(glob(
                     base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
                                                   0]]
-                print('PSF...')
+                #print('PSF...')
                 #print(glob(
                 #    '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' +
                 #    self.field + '/' + self.ccd + '/CALIBRATIONS/psf*' + self.ccd + '_' + epoch + '*grid02*'))

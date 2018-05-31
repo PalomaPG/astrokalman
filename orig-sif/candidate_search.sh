@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name="candidate_search"
 #SBATCH --partition=slims
-#SBATCH -n 1
+#SBATCH -c 4
 #SBATCH --mem-per-cpu=2400
 #SBATCH --output=outputs/CS-%j.out
 #SBATCH --error=outputs/CS-%j.err

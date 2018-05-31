@@ -29,7 +29,7 @@ class RunData(object):
         self.only_HiTS_SN = only_HiTS_SN
 
         # Asking if i am @leftraru
-        self.at_leftraru = False #bool(glob('/home/pperez/'))
+        self.at_leftraru = bool(glob('/home/pperez/'))
 
         self.results_dir = results_dir
         if not os.path.exists(self.results_dir):

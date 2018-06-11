@@ -35,11 +35,11 @@ class Runner(object):
         self.data['invDir'] = self.walking_through_files('invRegEx', 'invDir')
         self.data['afluxDir'] = self.walking_through_files('afluxRegEx', 'afluxDir')
 
-    def walking_through_files(self, regex, dir):
+    def walking_through_files(self, regex, dir_):
 
         regex = re.compile(self.files_settings[regex])
         selected_base = []
-        for root, dirs, files in os.walk(self.files_settings[dir]):
+        for root, dirs, files in os.walk(self.files_settings[dir_]):
             filtered_files = [root+'/'+f for f in filter(regex.search, files)]
             selected_base += filtered_files
         return selected_base

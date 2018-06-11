@@ -6,7 +6,6 @@ import numpy as np
 from glob import glob
 from astropy.io import fits
 import scipy.ndimage as spn
-#import pymorph as pm
 import mahotas as mh
 
 class FITSHandler(object):

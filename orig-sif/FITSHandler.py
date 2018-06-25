@@ -7,6 +7,7 @@ from glob import glob
 from astropy.io import fits
 import scipy.ndimage as spn
 import mahotas as mh
+from time import sleep
 
 class FITSHandler(object):
 
@@ -193,9 +194,12 @@ class FITSHandler(object):
 
         for e in ['science', 'diff', 'invVAR', 'psf', 'aflux']:
             if e in self.data_names:
+                print(self.data_names[e])
             #if self.data_names.has_key(e):
+                for i in MJDOrder:
+                    print(i)
                 self.data_names[e] = [self.data_names[e][i] for i in MJDOrder]
-
+                print(self.data_names[e])
         self.data_names['original_numFrames'] = len(MJD)
         self.data_names['original_MJD'] = MJD
 
@@ -227,7 +231,7 @@ class FITSHandler(object):
         :param o: int, indice de observacion
         :return void:
         """
-
+        #sleep(2)
         self.science = fits.open(self.data_names['science'][o])[0].data
         self.diff = fits.open(self.data_names['diff'][o])[0].data
         self.psf = np.load(self.data_names['psf'][o])

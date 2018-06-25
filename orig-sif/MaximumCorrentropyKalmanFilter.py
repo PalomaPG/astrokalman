@@ -11,7 +11,6 @@ class MaximumCorrentropyKalmanFilter(KalmanFilter):
 
     def image_stats(self, image, outlier_percentage=2.0):
         """
-
         :param image:
         :param outlier_percentage:
         :return:

@@ -9,7 +9,7 @@ def main():
     print(len(runner.get_files('baseDir')))
     print(len(runner.get_files('maskDir')))
     print(len(runner.get_files('crblastDir')))
-    print(len(runner.get_files('scienceDir')))
+    #print(len(runner.get_files('scienceDir')))
 
 
 if __name__ == '__main__':

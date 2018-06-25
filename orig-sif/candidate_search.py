@@ -3,8 +3,11 @@ from RunData import RunData
 from FITSHandler import FITSHandler
 from Observer import Observer
 
-
+#### Time measurement method 1 ###
 from time import process_time
+
+#### Time measurement method 2 ####
+from unix_time import unix_time
 
 year = '15'
 n_params = 32
@@ -32,26 +35,32 @@ load_photometry_time = 0
 update_filter_time = 0
 draw_groups_time = 0
 
+load_photometry_time2 = 0
+update_filter_time2 = 0
+draw_groups_time2 = 0
+
 for o in range(len(MJD)):
     print('Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD)))
     
     ti = process_time()
     # Que FH tenga listos los flujos para pasarlos a KF
-    FH.load_fluxes(o)
+    t_dict = unix_time(FH.load_fluxes,(o, ))
     #print('Load and photometry time: ' + str(process_time()-ti))
     load_photometry_time = (process_time()-ti) + load_photometry_time
-
+    load_photometry_time2 = t_dict['user']+t_dict['sys']+ load_photometry_time2
 
     ti = process_time()
-    KF.update(MJD[o],FH)
+    t_dict =unix_time(KF.update,(MJD[o],FH,))
     #print('Update filter time: ' + str(process_time()-ti))
     update_filter_time = (process_time()-ti) + update_filter_time
+    update_filter_time2 = t_dict['user']+t_dict['sys']+ update_filter_time2
 
     ti = process_time()
     # Detector...  Deteccion de candidatos
-    SN.draw_complying_pixel_groups(o, FH, KF)
+    t_dict = unix_time(SN.draw_complying_pixel_groups,(o, FH, KF,))
     #print('Draw groups time: ' + str(process_time()-ti))
     draw_groups_time = (process_time()-ti) + draw_groups_time
+    draw_groups_time2 = t_dict['user']+t_dict['sys']+ draw_groups_time2
 
     SN.update_candidates(o)
     
@@ -63,6 +72,11 @@ print('Loading photometry: %f\n' % (load_photometry_time))
 print('Updating filter: %f\n' % (update_filter_time))
 print('Drawing groups: %f\n' % (draw_groups_time))
 
+
+print('\nTiempo total2: %f\n' % (load_photometry_time2 + update_filter_time2 + draw_groups_time2))
+print('Loading photometry2: %f\n' % (load_photometry_time2))
+print('Updating filter2: %f\n' % (update_filter_time2))
+print('Drawing groups2: %f\n' % (draw_groups_time2))
 # Classify new candidates
 SN.check_candidates(RD)
 
@@ -86,7 +100,7 @@ for o in range(len(MJD)):
     print('Beginning with observation: ' + str(o+1).zfill(2) + '/' + str(len(MJD)))
     
     ti = process_time()
-    FH.load_fluxes(o)
+    print(unix_time(FH.load_fluxes(o)))
     load_photometry_time = (process_time()-ti) + load_photometry_time
     
     ti = process_time()

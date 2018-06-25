@@ -10,6 +10,8 @@ class Runner(object):
 
         self.files_settings = {}
         self.data = {}
+        self.mjd = []
+        self.mjd_order = []
 
         with open(config_file, 'r') as f:
             #Ensure that line is written correctly
@@ -25,14 +27,12 @@ class Runner(object):
         self.select_images_dirs()
 
     def select_images_dirs(self):
-        self.select_images('baseDir')
-        self.select_images('maskDir')
-        self.select_images('crblastDir')
-
-        self.select_images('diffDir')
-        self.select_images('invDir')
-        self.select_images('afluxDir')
-        self.select_images('psfDir')
+        #self.sort_observations()
+        self.filter_obs()
+        self.select_fits('diffDir')
+        self.select_fits('invDir')
+        self.select_npys('psfDir')
+        self.select_npys('afluxDir', ref_dir ='scienceDir', init_index=0, n_pos=3, rest_len=0)
 
     def collect_data(self):
 
@@ -62,35 +62,89 @@ class Runner(object):
         """
         listar mjd y airmass, hacer seleccion de acuerdo a estos valores
         """
-        data_science = []
 
+        data = []
         for fits_image in self.data['scienceDir']:
             with fits.open(fits_image) as opened_fits_image:
                 if float(opened_fits_image[0].header['AIRMASS']) < 1.7:
-                    data_science.append(fits_image)
+                    data.append(fits_image)
+                    self.mjd.append(float(opened_fits_image[0].header['MJD-OBS']))
 
-        self.data['scienceDir'] = data_science
-    # Append in order
 
-    def select_images(self, dir_):
-        new_dir = []
+        self.mjd_order = np.argsort(self.mjd)
+        self.mjd.sort()
+        self.data['scienceDir'] = [data[i] for i in self.mjd_order]
 
-        for science_image in self.data['scienceDir']:
+    def select_fits(self, dir_, print_=False):
+        new_dir_content = []
+        mjd_lst = []
 
-            science_prefix = (os.path.basename(os.path.normpath(science_image)))
-            science_prefix = science_prefix[:[m.start() for m in re.finditer(r"_", science_prefix)][2]+3]
-            print(fits.open(science_image)[0].header['MJD-OBS'], science_prefix)
-            isin = False
-            for fits_file in self.data[dir_]:
-                if fits_file.find(science_prefix) > -1:
-                    new_dir.append(fits_file)
-                    isin = True
-                    break
-            if not isin:
-                #print(science_image)
-                self.data['scienceDir'].remove(science_image)
+        for image in self.data[dir_]:
+            mjd = float(fits.open(image)[0].header['MJD-OBS'])
+            if mjd in self.mjd:
+                mjd_lst.append(mjd)
+                new_dir_content.append(image)
 
-        print("Science image number: %d, number of resultant images in directory %s: %d"
-             % (len(self.data['scienceDir']), dir_, len(new_dir)))
+        mjd_order = np.argsort(mjd_lst)
+        self.data[dir_] = [new_dir_content[i] for i in mjd_order]
 
-        self.data[dir_] = new_dir
+        if print_:
+            print('# science images: %d;  # images in %s: %d' %
+                (len(self.data['scienceDir']), dir_, len(self.data[dir_])))
+
+    def select_npys(self, dir_, ref_dir='diffDir',
+                      init_index=5, n_pos=5, rest_len=7):
+
+        # for data including psf info: ref_dir = 'diffDir',init_index=5, n_pos=3, rest_len=7,
+        # on the contrary ref_dir = 'scienceDir',init_index=0, n_pos=3, rest_len=0
+        new_content = []
+
+        for image in self.data[ref_dir]:
+            image_prefix = (os.path.basename(os.path.normpath(image)))
+            image_prefix = \
+                image_prefix[init_index:[m.start() for m in re.finditer(r"_", image_prefix)][n_pos]+rest_len]
+            for npy_file in self.data[dir_]:
+                if npy_file.find(image_prefix) > -1:
+                    new_content.append(npy_file)
+
+    def obs_mjds(self):
+        mjd_base = []
+        mjd_msk = []
+        mjd_crb = []
+
+        for image in self.data['baseDir']:
+            mjd_base.append(float(fits.open(image)[0].header['MJD-OBS']))
+
+        for image in self.data['maskDir']:
+            mjd_msk.append(float(fits.open(image)[0].header['MJD-OBS']))
+
+        for image in self.data['crblastDir']:
+            mjd_crb.append(float(fits.open(image)[0].header['MJD-OBS']))
+
+        mjd = list(set(mjd_base) & set(mjd_msk) & set(mjd_crb))
+        mjd.sort()
+        return mjd
+
+    def select_obs_images(self, mjd_lst, dir_):
+        new_content = []
+        for image in self.data[dir_]:
+            mjd = (float(fits.open(image)[0].header['MJD-OBS']))
+            if mjd in mjd_lst and np.around(mjd, 7) in self.mjd:
+                new_content.append(image)
+
+        self.data[dir_] = new_content
+
+    def filter_obs(self):
+        #self.select_science_images()
+
+        mjd_lst = self.obs_mjds()
+        self.select_obs_images(mjd_lst, 'baseDir')
+        self.select_obs_images(mjd_lst, 'maskDir')
+        self.select_obs_images(mjd_lst, 'crblastDir')
+        print('MJD list length: %d' % len(self.mjd))
+        #self.mjd = list(set(self.mjd) & set(list(np.around(np.array(mjd_lst), 7))))
+        #print('MJD list length: %d' %  len(self.mjd))
+
+
+    def get_data(self):
+        return self.data

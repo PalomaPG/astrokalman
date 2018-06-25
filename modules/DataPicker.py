@@ -4,7 +4,7 @@ import numpy as np
 from astropy.io import fits
 
 
-class Runner(object):
+class DataPicker(object):
 
     def __init__(self, config_file):
 
@@ -27,7 +27,6 @@ class Runner(object):
         self.select_images_dirs()
 
     def select_images_dirs(self):
-        #self.sort_observations()
         self.filter_obs()
         self.select_fits('diffDir')
         self.select_fits('invDir')
@@ -35,7 +34,6 @@ class Runner(object):
         self.select_npys('afluxDir', ref_dir ='scienceDir', init_index=0, n_pos=3, rest_len=0)
 
     def collect_data(self):
-
         self.data['baseDir'] = self.walking_through_files('baseRegEx', 'baseDir')
         self.data['maskDir'] = self.walking_through_files('maskRegEx', 'maskDir')
         self.data['crblastDir'] = self.walking_through_files('crblastRegEx', 'crblastDir')
@@ -47,7 +45,6 @@ class Runner(object):
         self.data['psfDir'] = self.walking_through_files('psfRegEx', 'psfDir')
 
     def walking_through_files(self, regex, dir_):
-
         regex = re.compile(self.files_settings[regex])
         selected_base = []
         for root, dirs, files in os.walk(self.files_settings[dir_]):
@@ -62,14 +59,12 @@ class Runner(object):
         """
         listar mjd y airmass, hacer seleccion de acuerdo a estos valores
         """
-
         data = []
         for fits_image in self.data['scienceDir']:
             with fits.open(fits_image) as opened_fits_image:
                 if float(opened_fits_image[0].header['AIRMASS']) < 1.7:
                     data.append(fits_image)
                     self.mjd.append(float(opened_fits_image[0].header['MJD-OBS']))
-
 
         self.mjd_order = np.argsort(self.mjd)
         self.mjd.sort()
@@ -135,7 +130,6 @@ class Runner(object):
         self.data[dir_] = new_content
 
     def filter_obs(self):
-        #self.select_science_images()
 
         mjd_lst = self.obs_mjds()
         self.select_obs_images(mjd_lst, 'baseDir')

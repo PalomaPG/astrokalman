@@ -233,9 +233,13 @@ class FITSHandler(object):
         """
         #sleep(2)
         self.science = fits.open(self.data_names['science'][o])[0].data
+        print('\n--------------------MJD observation: %d-------------' % o)
+        print(fits.open(self.data_names['science'][o])[0].header['MJD-OBS'])
         self.diff = fits.open(self.data_names['diff'][o])[0].data
+        print(fits.open(self.data_names['diff'][o])[0].header['MJD-OBS'])
         self.psf = np.load(self.data_names['psf'][o])
         invvar = fits.open(self.data_names['invVAR'][o])[0].data
+        print(fits.open(self.data_names['invVAR'][o])[0].header['MJD-OBS'])
 
         # Filter bad invVAR values
         invvar[invvar == np.inf] = 0.01

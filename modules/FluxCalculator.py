@@ -6,32 +6,42 @@ import mahotas as mh
 
 class FluxCalculator(object):
 
+    def __init__(self, image_size, accum_neg_flux_depth =4, accum_med_flux_depth=3):
+        self.accum_neg_flux_depth = accum_neg_flux_depth
+        self.accum_med_flux_depth = accum_med_flux_depth
+        self.image_size = image_size
 
-    def naylor_photometry(self, invvar, diff):
-        """
-        Convoluciona flujos. Calcula flujo y su varianza
-        :param invvar: float matrix, Varianza de la imagen de diferencia
-        :return void:
-        """
+    def naylor_photometry(self, invvar, diff, psf):
         input = diff * invvar
-        #print 'dimension input 1 @ naylor_photometry %d' % input_1.ndim
-        #print 'dimension psf @ naylor_photometry %d' % self.psf.ndim
-        if input.ndim != self.psf.ndim:
-            return
+        flux = spn.convolve(input, psf)
+        psf2 = psf ** 2
+        conv = spn.convolve(invvar, psf2)
+        conv[conv == 0] = 0.000001
+        var_flux = 1.0/conv
+        return flux*var_flux
 
-        self.flux = spn.convolve(input, self.psf)
-        psf2 = self.psf ** 2
-        convo = spn.convolve(invvar, psf2)
-        convo[convo == 0] = 0.000001
-        self.var_flux = 1 / convo
-        self.flux = self.flux * self.var_flux
-
-    def calc_fluxes(self, science, diff, psf, invvar):
-
-        science = fits.open(science)[0].data
-        diff = fits.open(diff)[0].data
-        psf = np.load(psf)
-        invvar = fits.open(invvar)[0].data
+    def calc_fluxes(self, science_, diff_,
+                    psf_, invvar_, aflux_,
+                    flux, var_flux):
+        science = fits.open(science_)[0].data
+        diff = fits.open(diff_)[0].data
+        psf = np.load(psf_)
+        invvar = fits.open(invvar_)[0].data
 
         invvar[invvar == np.inf] = 0.01
         self.naylor_photometry(invvar)
+
+        if diff_.find('02t') > 0 :
+            aflux = np.load(aflux_)[0]
+            flux = flux/aflux
+            var_flux = var_flux/(aflux * aflux)
+
+        var_flux = np.sqrt(var_flux)
+        flux[np.isnan(flux)] == .001
+
+        '''
+        if o < self.accum_med_flux_depth:
+            self.accum_median_flux[o, :] = self.flux
+        elif o == self.accum_med_flux_depth: # Cubo de booleans
+            self.median_rejection = np.median(self.accum_median_flux, 0) > 1500.0
+        '''

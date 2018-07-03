@@ -24,14 +24,7 @@ class DataPicker(object):
     def set_data(self):
         self.collect_data()
         self.select_science_images()
-        self.select_images_dirs()
-
-    def select_images_dirs(self):
-        self.filter_obs()
-        self.select_fits('diffDir')
-        self.select_fits('invDir')
-        self.select_npys('psfDir')
-        self.select_npys('afluxDir', ref_dir ='scienceDir', init_index=0, n_pos=3, rest_len=0)
+        #self.select_images_dirs()
 
     def collect_data(self):
         self.data['baseDir'] = self.walking_through_files('baseRegEx', 'baseDir')
@@ -69,6 +62,15 @@ class DataPicker(object):
         self.mjd_order = np.argsort(self.mjd)
         self.mjd.sort()
         self.data['scienceDir'] = [data[i] for i in self.mjd_order]
+
+
+'''
+    def select_images_dirs(self):
+        self.filter_obs()
+        self.select_fits('diffDir')
+        self.select_fits('invDir')
+        self.select_npys('psfDir')
+        self.select_npys('afluxDir', ref_dir ='scienceDir', init_index=0, n_pos=3, rest_len=0)
 
     def select_fits(self, dir_, print_=False):
         new_dir_content = []
@@ -138,7 +140,6 @@ class DataPicker(object):
         print('MJD list length: %d' % len(self.mjd))
         #self.mjd = list(set(self.mjd) & set(list(np.around(np.array(mjd_lst), 7))))
         #print('MJD list length: %d' %  len(self.mjd))
+'''
 
 
-    def get_data(self):
-        return self.data

@@ -1,0 +1,47 @@
+@startuml
+
+
+class Runner{
+FITSHandler
+AbstractKalman
+SNDetector
+settings{}
+
+decide_second_run(): bool
+save_results(): void
+set_filter_and_detector(): void
+generate_plots(): void
+execute_routine(): void
+get_fluxes():
+}
+
+class FITSHandler{
+base_images: string list
+mask_images: string list
+crblast_images: string list
+sci_images: string list
+diff_images: string list
+invvar_images: string list
+psf_images: string list
+aflux_images: string list
+image_size: int tuple
+mjd_serie: float list
+
+naylor_photometry()
+calc_fluxes()
+}
+
+
+abstract class AbstractKalman
+class BasicKalman
+class MCKalman
+
+class SNDetector
+
+AbstractKalman <|-- BasicKalman
+AbstractKalman <|-- MCKalman
+
+Runner --> FITSHandler
+Runner --> AbstractKalman
+Runner --> SNDetector
+@enduml

@@ -120,8 +120,9 @@ void correct_with_measurments(float [][], float [][], float, int, bool, bool)
 
 
 KalmanFilter <|-- MaximumCorrentropyKalmanFilter
-RunData <... FITSHandler
-
-
+RunData -- FITSHandler
+RunData -- KalmanFilter
+RunData -- SNDetector
+RunData -- Observer
 
 @enduml

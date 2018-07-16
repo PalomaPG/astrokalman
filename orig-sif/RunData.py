@@ -14,7 +14,7 @@ class RunData(object):
                  test_SN=92,
                  filter_type='kalman',
                  n_params=0,
-                 results_dir='./results/'):
+                 results_dir='/home/pperez/Thesis/results/'):
         """
         Guarda parametros de la ejecucion
         :param year: string, sn year (13,14,15)
@@ -24,13 +24,14 @@ class RunData(object):
         :param n_params: int, # veces que tiene que repetirse el algoritmo (solo leftraru)
         :param results_dir: string, Directorio resultados
         """
-        self.year = year
+       	self.year = year
         # only CCDs with SN
         self.only_HiTS_SN = only_HiTS_SN
+        print('ask where i am')
 
         # Asking if i am @leftraru
-        self.at_leftraru = False #bool(glob('/home/pperez/'))
-
+        self.at_leftraru = bool(glob('/home/pperez/'))
+        print('results must be saved into: %s' % results_dir)	
         self.results_dir = results_dir
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
@@ -48,7 +49,7 @@ class RunData(object):
             self.index = int(sys.argv[1])
         else:
             # specific SN (test_SN)
-            #print test_SN
+            print(test_SN)
             self.index = test_SN
             #n_params = 0
 
@@ -60,7 +61,7 @@ class RunData(object):
             print(int(self.this_par))
             self.index = self.index % n_CCDs
 
-        self.SN_table = np.loadtxt('./ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
+        self.SN_table = np.loadtxt('/home/pperez/Thesis/sif2/orig-sif/ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
 
         self.images_size = (4094, 2046)
 
@@ -76,6 +77,7 @@ class RunData(object):
             self.SN_index = -1
 
         self.filter_type = filter_type
+        print('Type of filter: %s\n' % self.filter_type )
 
     def apply_params(self):
         """
@@ -86,6 +88,7 @@ class RunData(object):
         decomposing_parameter = self.this_par
         print(self.this_par)
         self.filter_type = ['kalman', 'MCC'][decomposing_parameter % 2]
+	print('selected filter type %s\n' % self.filter_type)
         #decomposing_parameter = decomposing_parameter / 2
         decomposing_parameter = int(decomposing_parameter / 2)
         # Change threshold
@@ -120,6 +123,8 @@ class RunData(object):
             filename = 'HiTS' + str(self.SN_index + 1).zfill(2) + '-' + ['nay', 'AYE'][self.SN_found] + '_' + filename
         if self.n_params > 0:
             filename = 'par-' + str(self.this_par).zfill(2) + '_' + filename
+        print('save results...@%s' % self.results_dir)
+        print(self.results_dir +  filename)
         np.savez(self.results_dir +  filename, objects=OB.obj)
 
     def decide_second_run(self, OB):

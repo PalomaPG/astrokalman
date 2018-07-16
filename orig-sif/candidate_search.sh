@@ -17,5 +17,11 @@ echo "SLURM_NNODES"=$SLURM_NNODES
 echo "SLURMTMPDIR="$SLURMTMPDIR
 echo "working directory="$SLURM_SUBMIT_DIR
 
-python -m cProfile -o sif_profile candidate_search.py $SLURM_ARRAY_TASK_ID
+module load Lmod/6.5
+source $LMOD_PROFILE
+ml icc/2017.4.196-GCC-6.4.0-2.28 impi/2017.3.196 Python/3.6.3
+
+source /home/pperez/Thesis/sif2/venv/bin/activate
+
+python -m cProfile -o /home/pperez/Thesis/sif2/orig-sif/sif_profile_leftraru candidate_search.py $SLURM_ARRAY_TASK_ID
 echo "Trabajo terminado";

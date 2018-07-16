@@ -44,23 +44,22 @@ class FITSHandler(object):
 
         print('@get_data_names')
         self.data_names = {}
-        base_dir = '/home/apps/astro/data/DATA/'
+        #base_dir = '/home/apps/astro/data/DATA'
 
-        if glob('/home/pperez/Thesis/sif2/orig-sif'):  # At Leftraru
+        if glob('/home/pperez/Thesis/'):  # At Leftraru
             print('At Leftraru')
-            #print(glob(base_dir + 'Blind' + self.year + 'A_' + self.field+'/*/Blind*_image.fits.fz'))
+            print(self.field)
+            print(self.ccd)
+            #print(glob(base_dir + 'Blind' + self.year + 'A_' + self.field+'/*/Blind*_image.fits.fz')
+            base_dir = '/home/apps/astro/data/'
+            data_dir = base_dir + 'DATA/Blind15A_' + self.field + '/'+ self.ccd+ '/'
+            print(data_dir)
+            cali_dir = base_dir + 'SHARED/Blind15A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/'
+	
+            self.data_names['base'] = glob(data_dir + 'Blind*02_image.*')[0]
 
-            self.data_names['base'] = \
-            sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*_image.fits*'))[
-                0]
-
-            self.data_names['mask_dq'] = sorted(glob(base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*_dqmask.fits*'))[
-                0]
-            self.data_names['base_crblaster'] = sorted(glob(
-                base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*image_crblaster.fits*'))[0]
-            # projection
-            self.data_names['science'] = sorted(glob(
-                base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Blind*image_crblaster_grid02_lanczos2.fits'))
+            self.data_names['mask_dq'] = glob(data_dir + 'Blind*02_dqmask.*')[0]
+            self.data_names['science'] = sorted(glob(data_dir + 'Blind*image_crblaster_grid02_lanczos2.*'))
 
             self.data_names['diff'] = []
             self.data_names['invVAR'] = []
@@ -72,27 +71,14 @@ class FITSHandler(object):
                 ind = science_filename.find('_image_')
                 epoch = science_filename[ind - 2:ind]
                 # difference image
-                self.data_names['diff'] += [np.sort(glob(
-                    base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
-                                                0]]
+                self.data_names['diff'] += glob(data_dir + 'Diff*' + self.ccd + '_' + epoch + '*grid02_lanczos2.*')
                 # 1/var pf diff image
-                self.data_names['invVAR'] += [np.sort(glob(
-                    base_dir + 'Blind' + self.year + 'A_' + self.field + '/*/invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
-                                                  0]]
-                #print('PSF...')
-                #print(glob(
-                #    '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' +
-                #    self.field + '/' + self.ccd + '/CALIBRATIONS/psf*' + self.ccd + '_' + epoch + '*grid02*'))
-
-                # diff image psf
-                self.data_names['psf'] += [np.sort(glob(
-                    '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/psf*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[
-                                               0]]
+                self.data_names['invVAR'] += glob(data_dir +'invVAR*' + self.ccd + '_' + epoch + '*grid02_lanczos2.*')
+                #image psf
+                self.data_names['psf'] += glob( cali_dir+'psf*' + self.ccd + '_' + epoch + '*grid02_lanczos2.*')
 
                 # astrometric and relative flux constants
-                self.data_names['aflux'] += [np.sort(glob(
-                    '/home/apps/astro/data/SHARED/Blind' + self.year + 'A_' + self.field + '/' + self.ccd + '/CALIBRATIONS/match_*' + epoch + '-02.npy')).tolist()[
-                                                 0]]
+                self.data_names['aflux'] += glob(cali_dir + 'match_*' + epoch + '-02.npy')
 
             print('loop end :) ')
 

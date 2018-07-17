@@ -118,43 +118,43 @@ class Observer(object):
         # MJD = obj['MJD']
 
         this_fig = plt.figure(figsize=(self.figsize1, self.figsize2))
-
         ax1 = plt.subplot2grid((num_graphs, 1), (0, 0))
-        plt.errorbar(MJD + 0.015, obj['state'][:, 0, posY, posX], yerr=obj['state_cov'][:, 0, posY, posX], fmt='b.-',
+
+        plt.errorbar(MJD + 0.015, obj[0]['state'][:, 0, posY, posX], yerr=obj[0]['state_cov'][:, 0, posY, posX], fmt='b.-',
                      label='Estimated flux')
-        plt.errorbar(MJD - 0.015, obj['pred_state'][:, 0, posY, posX], yerr=obj['pred_state_cov'][:, 0, posY, posX],
+        plt.errorbar(MJD - 0.015, obj[0]['pred_state'][:, 0, posY, posX], yerr=obj[0]['pred_state_cov'][:, 0, posY, posX],
                      fmt='g.', label='Predicted flux')
-        plt.errorbar(MJD, obj['obs_flux'][:, posY, posX], yerr=obj['obs_var_flux'][:, posY, posX], fmt='r.',
+        plt.errorbar(MJD, obj[0]['obs_flux'][:, posY, posX], yerr=obj[0]['obs_var_flux'][:, posY, posX], fmt='r.',
                      label='Observed flux')
         plt.grid()
         plt.legend(loc=0, fontsize='small')
         plt.xlim(MJD[0] - 1, MJD[-1] + 1)
-        plt.ylim([min(obj['state'][:, 0, posY, posX]) - 500, max(obj['state'][:, 0, posY, posX]) + 500])
-        plt.title('Position: ' + str(obj['posY']) + ',' + str(obj['posX']) + ', status: ' + str(obj['status']))
+        plt.ylim([min(obj[0]['state'][:, 0, posY, posX]) - 500, max(obj[0]['state'][:, 0, posY, posX]) + 500])
+        plt.title('Position: ' + str(obj[0]['posY']) + ',' + str(obj[0]['posX']) + ', status: ' + str(obj[0]['status']))
 
         plt.subplot2grid((num_graphs, 1), (1, 0), sharex=ax1)
-        plt.errorbar(MJD, obj['state'][:, 1, posY, posX], yerr=obj['state_cov'][:, 2, posY, posX], fmt='b.-',
+        plt.errorbar(MJD, obj[0]['state'][:, 1, posY, posX], yerr=obj[0]['state_cov'][:, 2, posY, posX], fmt='b.-',
                      label='Estimated flux velocity')
-        plt.errorbar(MJD - 0.03, obj['pred_state'][:, 1, posY, posX], yerr=obj['pred_state_cov'][:, 2, posY, posX],
+        plt.errorbar(MJD - 0.03, obj[0]['pred_state'][:, 1, posY, posX], yerr=obj[0]['pred_state_cov'][:, 2, posY, posX],
                      fmt='g.', label='Predicted flux velocity')
         plt.grid()
         plt.legend(loc=0, fontsize='small')
         plt.xlim(MJD[0] - 1, MJD[-1] + 1)
 
         plt.subplot2grid((num_graphs, 1), (2, 0), sharex=ax1)
-        plt.plot(MJD, obj['pixel_flags'][:, posY, posX], '.-', label='Pixel flags')
-        plt.plot(MJD, obj['group_flags'][:, posY, posX], '.-', label='Pixel Group flags')
+        plt.plot(MJD, obj[0]['pixel_flags'][:, posY, posX], '.-', label='Pixel flags')
+        plt.plot(MJD, obj[0]['group_flags'][:, posY, posX], '.-', label='Pixel Group flags')
         plt.grid()
         plt.legend(loc=0, fontsize='small')
         plt.xlim(MJD[0] - 1, MJD[-1] + 1)
 
         plt.subplot2grid((num_graphs, 1), (3, 0), sharex=ax1)
-        plt.plot(MJD - 0.011, obj['pred_state_cov'][:, 0, posY, posX], 'y.', label='Pred Flux Variance')
-        plt.plot(MJD - 0.01, obj['state_cov'][:, 0, posY, posX], 'y+', label='Flux Variance')
-        plt.plot(MJD - 0.001, obj['pred_state_cov'][:, 1, posY, posX], 'b.', label='Pred Flux-Velo Variance')
-        plt.plot(MJD + 0.00, obj['state_cov'][:, 1, posY, posX], 'b+', label='Flux-Velo Variance')
-        plt.plot(MJD + 0.009, obj['pred_state_cov'][:, 2, posY, posX], 'g.', label='Pred Velo Variance')
-        plt.plot(MJD + 0.01, obj['state_cov'][:, 2, posY, posX], 'g+', label='Velo Variance')
+        plt.plot(MJD - 0.011, obj[0]['pred_state_cov'][:, 0, posY, posX], 'y.', label='Pred Flux Variance')
+        plt.plot(MJD - 0.01, obj[0]['state_cov'][:, 0, posY, posX], 'y+', label='Flux Variance')
+        plt.plot(MJD - 0.001, obj[0]['pred_state_cov'][:, 1, posY, posX], 'b.', label='Pred Flux-Velo Variance')
+        plt.plot(MJD + 0.00, obj[0]['state_cov'][:, 1, posY, posX], 'b+', label='Flux-Velo Variance')
+        plt.plot(MJD + 0.009, obj[0]['pred_state_cov'][:, 2, posY, posX], 'g.', label='Pred Velo Variance')
+        plt.plot(MJD + 0.01, obj[0]['state_cov'][:, 2, posY, posX], 'g+', label='Velo Variance')
         plt.grid()
         plt.legend(loc=0, fontsize='small')
         plt.xlim(MJD[0] - 1, MJD[-1] + 1)
@@ -201,50 +201,50 @@ class Observer(object):
         this_fig = plt.figure(figsize=(self.figsize1, self.figsize2))
 
         plt.subplot2grid((num_graphs, 1), (0, 0))
-        plt.imshow(self.stack_stamps(obj['science'], MJD), vmin=0, vmax=600, cmap='Greys_r', interpolation='none')
+        plt.imshow(self.stack_stamps(obj[0]['science'], MJD), vmin=0, vmax=600, cmap='Greys_r', interpolation='none')
         plt.axis('off')
         plt.title(
-            'Science image, position: ' + str(obj['posY']) + ',' + str(obj['posX']) + ', status: ' + str(obj['status']))
+            'Science image, position: ' + str(obj[0]['posY']) + ',' + str(obj[0]['posX']) + ', status: ' + str(obj[0]['status']))
 
         plt.subplot2grid((num_graphs, 1), (1, 0))
-        plt.imshow(self.stack_stamps(obj['psf'], MJD), vmin=0, vmax=0.05, cmap='Greys_r', interpolation='none')
+        plt.imshow(self.stack_stamps(obj[0]['psf'], MJD), vmin=0, vmax=0.05, cmap='Greys_r', interpolation='none')
         plt.title('PSF')
         plt.axis('off')
 
         plt.subplot2grid((num_graphs, 1), (2, 0))
-        plt.imshow(self.stack_stamps(obj['obs_flux'], MJD), vmin=-200, vmax=3000, cmap='Greys_r', interpolation='none')
+        plt.imshow(self.stack_stamps(obj[0]['obs_flux'], MJD), vmin=-200, vmax=3000, cmap='Greys_r', interpolation='none')
         plt.title('Observed flux')
         plt.axis('off')
 
         plt.subplot2grid((num_graphs, 1), (3, 0))
-        plt.imshow(self.stack_stamps(obj['obs_var_flux'], MJD), vmin=0, vmax=300, cmap='Greys_r', interpolation='none')
+        plt.imshow(self.stack_stamps(obj[0]['obs_var_flux'], MJD), vmin=0, vmax=300, cmap='Greys_r', interpolation='none')
         plt.title('Observed flux variance')
         plt.axis('off')
 
         plt.subplot2grid((num_graphs, 1), (4, 0))
-        plt.imshow(self.stack_stamps(obj['state'][:, 0, :], MJD), vmin=-200, vmax=3000, cmap='Greys_r',
+        plt.imshow(self.stack_stamps(obj[0]['state'][:, 0, :], MJD), vmin=-200, vmax=3000, cmap='Greys_r',
                    interpolation='none')
         plt.title('Estimated flux')
         plt.axis('off')
 
         plt.subplot2grid((num_graphs, 1), (5, 0))
-        plt.imshow(self.stack_stamps(obj['state'][:, 1, :], MJD), vmin=-500, vmax=500, cmap='Greys_r',
+        plt.imshow(self.stack_stamps(obj[0]['state'][:, 1, :], MJD), vmin=-500, vmax=500, cmap='Greys_r',
                    interpolation='none')
         plt.title('Estimated flux velocity')
         plt.axis('off')
 
         plt.subplot2grid((num_graphs, 1), (6, 0))
-        plt.imshow(self.stack_stamps(-obj['pixel_flags'], MJD), vmin=-1, vmax=0, cmap='Greys_r', interpolation='none')
+        plt.imshow(self.stack_stamps(-obj[0]['pixel_flags'], MJD), vmin=-1, vmax=0, cmap='Greys_r', interpolation='none')
         plt.title('Pixel Flags')
         plt.axis('off')
 
         plt.subplot2grid((num_graphs, 1), (7, 0))
-        plt.imshow(self.stack_stamps(obj['group_flags'], MJD), vmin=-1, vmax=1, cmap='Greys_r', interpolation='none')
+        plt.imshow(self.stack_stamps(obj[0]['group_flags'], MJD), vmin=-1, vmax=1, cmap='Greys_r', interpolation='none')
         plt.title('Group Flags')
         plt.axis('off')
 
         plt.subplot2grid((num_graphs, 1), (8, 0))
-        plt.imshow(self.stack_stamps(obj['base_mask'], MJD), vmin=0, vmax=1, cmap='Greys_r', interpolation='none')
+        plt.imshow(self.stack_stamps(obj[0]['base_mask'], MJD), vmin=0, vmax=1, cmap='Greys_r', interpolation='none')
         plt.title('Base mask')
         plt.axis('off')
 

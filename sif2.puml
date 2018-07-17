@@ -2,46 +2,83 @@
 
 
 class Runner{
-FITSHandler
-AbstractKalman
-SNDetector
-settings{}
+data_picker: DataPicker
+flux_calculator: FluxCalculator
+kalman: Kalman
 
-decide_second_run(): bool
-save_results(): void
-set_filter_and_detector(): void
+
+get_dir_content(): dictionary
+get_flux_components(): (float [][], float [][])
+get_curves(): void
 generate_plots(): void
-execute_routine(): void
-get_fluxes():
 }
 
-class FITSHandler{
-base_images: string list
-mask_images: string list
-crblast_images: string list
-sci_images: string list
-diff_images: string list
-invvar_images: string list
-psf_images: string list
-aflux_images: string list
-image_size: int tuple
-mjd_serie: float list
+class DataPicker{
+config_path : string
+dir_content : dictionary
+
+set_data(): void
+collect_data(): void
+walking_through_files(string, string): string []
+select_science_images(): void
+get_files(string) : string []
+}
+
+class FluxCalculator{
+dir_content : dictionary
+mjd_serie: float []
 
 naylor_photometry()
 calc_fluxes()
 }
-
-
-abstract class AbstractKalman
+class Kalman{
+flux : float [][]
+flux_vel : float [][]
+correction: Correction
+variable_accel_Q(float, float): void
+predict_at_new_time(float): void
+correct(): void
+update(): void
+}
 class BasicKalman
-class MCKalman
+class MCKalman{
+cholesky()
+inv_gauss(float, float)
+image_stats(float [][], float)
+}
+class NL_MCKalman
 
-class SNDetector
 
-AbstractKalman <|-- BasicKalman
-AbstractKalman <|-- MCKalman
+Kalman <|-- BasicKalman
+Kalman <|-- MCKalman
+Kalman <|-- NL_MCKalman
 
-Runner --> FITSHandler
-Runner --> AbstractKalman
-Runner --> SNDetector
+
+Runner --> DataPicker
+Runner --> Kalman
+Runner --> FluxCalculator
+
+
+BasicKalman --> BasicCorrection
+MCKalman --> MCCorrection
+NL_MCKalman --> NL_MCCorrection
+
+Interface Correction{
+correct_with_measurements()
+}
+Correction <-- Kalman
+
+class BasicCorrection{
+correct_with_measurements()
+
+}
+class MCCorrection{
+correct_with_measurements()
+
+}
+class NL_MCCorrection{
+correct_with_measurements()
+}
+
+
 @enduml

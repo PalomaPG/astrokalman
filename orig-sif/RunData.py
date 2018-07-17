@@ -91,7 +91,6 @@ class RunData(object):
         print('selected filter type %s\n' % self.filter_type)
         #decomposing_parameter = decomposing_parameter / 2
         decomposing_parameter = int(decomposing_parameter / 2)
-        # Change threshold
         self.flux_thres = [250, 375, 500, 625][decomposing_parameter % 4]
         decomposing_parameter = int(decomposing_parameter / 4)
         self.vel_flux_thres = [0, 75, 150, 225][decomposing_parameter % 4]
@@ -120,6 +119,7 @@ class RunData(object):
         """
         filename = self.field + '-' + self.resultccd + '_NUO-' + str(self.NUO).zfill(2)
         if self.SN_index >= 0:
+            # que significa 'nay' y 'AYE'?
             filename = 'HiTS' + str(self.SN_index + 1).zfill(2) + '-' + ['nay', 'AYE'][self.SN_found] + '_' + filename
         if self.n_params > 0:
             filename = 'par-' + str(self.this_par).zfill(2) + '_' + filename

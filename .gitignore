@@ -8,3 +8,5 @@ venv
 orig-sif/profile_output
 orig-sif/profile_sif
 orig-sif/sif_profile
+*.npz
+*.png

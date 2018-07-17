@@ -88,10 +88,8 @@ class RunData(object):
         decomposing_parameter = self.this_par
         print(self.this_par)
         self.filter_type = ['kalman', 'MCC'][decomposing_parameter % 2]
-	print('selected filter type %s\n' % self.filter_type)
-        #decomposing_parameter = decomposing_parameter / 2
+        print('selected filter type %s\n' % self.filter_type)
         decomposing_parameter = int(decomposing_parameter / 2)
-        # Change threshold
         self.flux_thres = [250, 375, 500, 625][decomposing_parameter % 4]
         decomposing_parameter = int(decomposing_parameter / 4)
         self.vel_flux_thres = [0, 75, 150, 225][decomposing_parameter % 4]

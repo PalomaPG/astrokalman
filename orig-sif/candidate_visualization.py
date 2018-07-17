@@ -14,20 +14,15 @@ all_results = glob(results_dir + '*.npz')
 print(all_results)
 
 for result_name in all_results:
-    print(result_name)
     objects = np.load(result_name)['objects']
     MJD = objects[0]['MJD']
-    print(MJD)
     new_obs = Observer(len(MJD),figsize1=18,figsize2=9.5)
     new_obs.obj = objects
     
     SN_found = result_name.find('AYE') >= 0
     HiTSSN = result_name[result_name.find('HiTS')+4:result_name.find('HiTS')+6]
-    print(HiTSSN)
     filename = '/home/paloma/Documents/Memoria/Code/sif2/orig-sif/images/' + param + 'HiTS' + HiTSSN
-    print(filename)
 
-    print(SN_found)
     new_obs.print_lightcurve(MJD=MJD, obj=new_obs.obj, save_filename=filename, SN_found=SN_found)
     new_obs.print_stamps(MJD=MJD, obj=new_obs.obj, save_filename=filename, SN_found=SN_found)
     

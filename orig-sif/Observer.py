@@ -118,10 +118,7 @@ class Observer(object):
         # MJD = obj['MJD']
 
         this_fig = plt.figure(figsize=(self.figsize1, self.figsize2))
-
         ax1 = plt.subplot2grid((num_graphs, 1), (0, 0))
-        print(obj[0]['state'][:, 0, posY, posX])
-        print(obj[0]['state_cov'][:, 0, posY, posX])
 
         plt.errorbar(MJD + 0.015, obj[0]['state'][:, 0, posY, posX], yerr=obj[0]['state_cov'][:, 0, posY, posX], fmt='b.-',
                      label='Estimated flux')

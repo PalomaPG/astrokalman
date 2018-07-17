@@ -120,6 +120,7 @@ class RunData(object):
         """
         filename = self.field + '-' + self.resultccd + '_NUO-' + str(self.NUO).zfill(2)
         if self.SN_index >= 0:
+            # que significa 'nay' y 'AYE'?
             filename = 'HiTS' + str(self.SN_index + 1).zfill(2) + '-' + ['nay', 'AYE'][self.SN_found] + '_' + filename
         if self.n_params > 0:
             filename = 'par-' + str(self.this_par).zfill(2) + '_' + filename

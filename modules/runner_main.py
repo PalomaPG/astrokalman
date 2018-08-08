@@ -1,16 +1,21 @@
 from DataPicker import DataPicker
+import pandas as pd
 import sys
 
 
-def main():
+def main(sn_index_path, sn_index,  config_path):
+    """
+    :param sn_index_path: String. Path to input SN list
+    :param sn_index: int. index of SN. It corresponds to the line of the SN depicted
+                   in the file referenced by path
+    :param path_: String. Path to input file which contains paths structures
+    :return: void
+    """
+    SNs = pd.read_csv(sn_index_path, sep=',', header=0)
+    sn_info = SNs.iloc[[sn_index]]
+    picker = DataPicker(config_path, sn_info.iloc[0]['Semester'], sn_info.iloc[0]['Field'], sn_info.iloc[0]['CCD'])
 
-    picker = DataPicker(sys.argv[1])
-    #print('Lista de archivos PSF')
-    print(len(picker.get_files('baseDir')))
-    print(len(picker.get_files('maskDir')))
-    print(len(picker.get_files('crblastDir')))
-    #print(len(runner.get_files('scienceDir')))
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1], sys.argv[2], sys.argv[3])

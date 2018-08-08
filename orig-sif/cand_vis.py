@@ -8,25 +8,27 @@ from time import time
 import matplotlib.pyplot as plt
 
 #results_dir = 'C:/cygwin64/home/Phuentelemu/MCKF/results/'
-results_dir = 'C:/Users/pablo/Dropbox/Supernovae/MCKF/best_results/'
+results_dir = '/home/paloma/Documents/Memoria/Code/sif2/orig-sif/results'
 
-save_lightcurve = False
+save_lightcurve = True
 save_stamps = False
-save_space_states = False
-save_total_comparison = False
-save_entropy_comparison = False
+save_space_states = True
+save_total_comparison = True
+save_entropy_comparison = True
 save_convex_entropy_comparison = True
 
 # Create images directory
-images_dir = 'resultsplots'
+images_dir = '/home/paloma/Documents/Memoria/Code/sif2/orig-sif/images'
 
 params = map(lambda x:str(x).zfill(2),range(2))
+params =np.fromiter(params, dtype=np.int)
+print(params)
 
 init_time = time()
-
+#np.fromiter(seq, dtype=np.int)
 if save_total_comparison:
     total_ss_fig = []
-    for ind_p in range(len(params)):
+    for ind_p in range(params):
         plt.figure(ind_p,figsize=(18,9.5))
         
         max_x_lim = 10000
@@ -47,24 +49,22 @@ if save_total_comparison:
         plt.ylabel('Flux Velocity [ADU/day]')
 
 for sn in range(93):
-    
     for p in params:
-        result = glob(results_dir + '/par-' + p + '_HiTS' + str(sn+1).zfill(2) + '*.npz')
+        result = glob(results_dir + '/par-' + str(p) + '_HiTS' + str(sn+1).zfill(2) + '*.npz')
+        print(result)
         if len(result)>0:
             result = result[0]
         else:
             continue
         
         objects = np.load(result)['objects']
-        new_obs = Observer(objects[0]['MJD'],figsize1=18,figsize2=9.5)
+        new_obs = Observer(objects[0]['MJD'], figsize1=18,figsize2=9.5)
         MJD = objects[0]['MJD']
         
         SN_found = result.find('AYE') >= 0
         NUO_counter = 0
-        
-                              
+
         for obj in objects:
-            
             filename = '/par-' + p + '_HiTS' + str(sn+1).zfill(2)
                               
             if obj['status'] == -1:
@@ -82,6 +82,7 @@ for sn in range(93):
             pos = '_' + str(obj['posY']).zfill(4) +'-'+ str(obj['posX']).zfill(4)
             
             filename = images_dir + filename + pos
+            print(filename)
             
             if save_lightcurve:
                 new_obs.print_lightcurve(MJD,obj,save_filename=filename,SN_found=SN_found)

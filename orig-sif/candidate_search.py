@@ -2,7 +2,7 @@
 from RunData import RunData
 from FITSHandler import FITSHandler
 from Observer import Observer
-
+import numpy as np
 #### Time measurement method 1 ###
 from time import process_time
 
@@ -15,7 +15,6 @@ n_params = 32
 RD = RunData(year=year, n_params=n_params)
 #RD = SIF.RunData(year=year,only_HiTS_SN=only_HiTS_SN,n_params=n_params,filter_type='MCC')
 if RD.n_params > 0:
-    print('apply params')
     RD.apply_params()
 
 init = process_time()
@@ -57,7 +56,7 @@ for o in range(len(MJD)):
 
     ti = process_time()
     # Detector...  Deteccion de candidatos
-    t_dict = unix_time(SN.draw_complying_pixel_groups,(o, FH, KF,))
+    t_dict = unix_time(SN.draw_complying_pixel_groups,(o, FH, KF, RD))
     #print('Draw groups time: ' + str(process_time()-ti))
     draw_groups_time = (process_time()-ti) + draw_groups_time
     draw_groups_time2 = t_dict['user']+t_dict['sys']+ draw_groups_time2
@@ -82,7 +81,8 @@ SN.check_candidates(RD)
 
 print('SN ' + ['not found ','found '][RD.SN_found])
 print('Number of unidentified objects: ' + str(RD.NUO))
-
+print('Conteo pixeles de acuerdo a flujo')
+print(np.mean(np.array(SN.count_pixel_cond_flux)))
 # Evaluate worth of second run
 RD.decide_second_run(OB)
     
@@ -108,11 +108,13 @@ for o in range(len(MJD)):
     update_filter_time = (process_time()-ti) + update_filter_time
     
     ti = process_time()
-    SN.draw_complying_pixel_groups(o, FH, KF)
+    SN.draw_complying_pixel_groups(o, FH, KF, RD)
     draw_groups_time = (process_time()-ti) + draw_groups_time
     
     OB.rescue_run_data(o, FH, KF, SN)
-    
+
+print('Conteo pixeles de acuerdo a flujo')
+print(SN.count_pixel_cond_flux)
 print('Tiempo total %f' % (load_photometry_time+update_filter_time+draw_groups_time))
 
 RD.save_results(OB)

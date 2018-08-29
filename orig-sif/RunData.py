@@ -11,10 +11,10 @@ class RunData(object):
 
     def __init__(self, year='15',
                  only_HiTS_SN=True,
-                 test_SN=92,
+                 test_SN=14,
                  filter_type='kalman',
                  n_params=0,
-                 results_dir='/home/pperez/Thesis/results/'):
+                 results_dir='./results/'):
         """
         Guarda parametros de la ejecucion
         :param year: string, sn year (13,14,15)
@@ -30,7 +30,7 @@ class RunData(object):
         print('ask where i am')
 
         # Asking if i am @leftraru
-        self.at_leftraru = bool(glob('/home/pperez/'))
+        self.at_leftraru = False#bool(glob('/home/pperez/'))
         print('results must be saved into: %s' % results_dir)	
         self.results_dir = results_dir
         if not os.path.exists(self.results_dir):
@@ -49,19 +49,16 @@ class RunData(object):
             self.index = int(sys.argv[1])
         else:
             # specific SN (test_SN)
-            print(test_SN)
             self.index = test_SN
             #n_params = 0
 
         self.n_params = n_params
         if self.n_params > 0:
-            print(self.index)
-            print(n_CCDs)
-            self.this_par = int(self.index / n_CCDs)
+            self.this_par = 2#int(self.index / n_CCDs)
             print(int(self.this_par))
             self.index = self.index % n_CCDs
 
-        self.SN_table = np.loadtxt('/home/pperez/Thesis/sif2/orig-sif/ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
+        self.SN_table = np.loadtxt('./ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
 
         self.images_size = (4094, 2046)
 

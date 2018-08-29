@@ -3,6 +3,7 @@
 # SIF: Stream Images Filtering
 
 import numpy as np
+import matplotlib.pyplot as plt
 import mahotas as mh
 
 class SNDetector(object):
@@ -70,7 +71,7 @@ class SNDetector(object):
         self.pixel_flags[:] = 0
 
         # Si el flujo estimado por KF es mayor al umbral de flujo
-        self.pixel_conditions[0, :] = KF.state[0, :] > 375#self.flux_thres
+        self.pixel_conditions[0, :] = KF.state[0, :] > self.flux_thres
         #print(sum(sum(self.pixel_conditions[0, :])))
         self.count_pixel_cond_flux.append(sum(sum(self.pixel_conditions[0, :])))
 
@@ -143,7 +144,7 @@ class SNDetector(object):
             #    print('PGData....%d' % i)
             #   print(self.PGData['mid_coords'][i, :])
 
-    def filter_groups(self, FH, KF):
+    def filter_groups(self, FH, KF, RD, o):
         """
 
         :param FH:
@@ -157,6 +158,7 @@ class SNDetector(object):
         neg_flux = 0
         max_rad_sc = 0
         max_rad_fl = 0
+        #self.flags_stats_gr[o] = 0
 
         for i in range(n_pixel_groups):
             posY, posX = self.PGData['mid_coords'][i, :]
@@ -167,24 +169,35 @@ class SNDetector(object):
             c, d = posX - NNFR, posX + NNFR + 1
             if np.any(FH.accum_neg_flux[:, a:b, c:d]):
                 self.PGData['group_flags'][i] += 1
+                '''
                 print('Discarding mid COORDS according to neg. flux')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
             # Local Maxima Radius in Science Image
+            #Busca max local dentro imagen cientifica
+            """
+            Deteccion de objeto emisor flujo en imagen cientifica
+            """
             LMSR = 3
             a, b = posY - LMSR + 1, posY + LMSR + 2
             c, d = posX - LMSR + 1, posX + LMSR + 2
             scienceLM = mh.regmax(FH.science[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             if not np.any(scienceLM[1:-1, 1:-1]):
                 self.PGData['group_flags'][i] += 2
+                '''
                 print('Local maxima rad in sci ima')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
 
+            """
+            Deteccion objeto en imagen de flujo estimado
+            """
             # Local Maxima Radius in Flux Image
             LMSR = 3
             a, b = posY - LMSR + 1, posY + LMSR + 2
@@ -193,13 +206,18 @@ class SNDetector(object):
             fluxLM = mh.regmax(FH.flux[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             if not np.any(fluxLM[1:-1, 1:-1]):
                 self.PGData['group_flags'][i] += 4
+                '''
                 print('Local maxima rad in flux ima')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
 
             # Local Maxima Radius in Estimated Flux Velocity Image
+            """
+            Deteccion variacion de flujo
+            """
             LMSR = 3
             a, b = posY - LMSR + 1, posY + LMSR + 2
             c, d = posX - LMSR + 1, posX + LMSR + 2
@@ -207,25 +225,36 @@ class SNDetector(object):
             velLM = mh.regmax(KF.state[1, a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             if not np.any(velLM[1:-1, 1:-1]):
                 self.PGData['group_flags'][i] += 8
+                '''
                 print('Local maxima rad in estimated flux vel ima')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
 
             # Above local science median
+            """
+            Pixel del centro con un flujo mayor a la mediana de la estampilla local. Para 'contener' objeto
+            """
             ASMR = 3
             a, b = posY - ASMR, posY + ASMR + 1
             c, d = posX - ASMR, posX + ASMR + 1
             if not (FH.science[posY, posX] > np.median(FH.science[a:b, c:d]) + 15):
                 self.PGData['group_flags'][i] += 16
+                '''
                 print('above local science median')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
 
             # Brightest Pixel on stamps (flux and science)
+            """
+            Ningun pixel de la estampilla cientifica y de flujo puede ser 2 veces + 
+            brillante que el pixel del centro (flujo o cientifica)
+            """
             BPOS = 10
             a, b = posY - BPOS, posY + BPOS + 1
             c, d = posX - BPOS, posX + BPOS + 1
@@ -233,41 +262,66 @@ class SNDetector(object):
                                          FH.science[a:b, c:d] > 2 * FH.science[posY, posX])
             if np.any(brightPixels):
                 self.PGData['group_flags'][i] += 32
+                '''
                 print('Bright pixels')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
+
+            """
+            El pixel central no puede estar parado sobre el pixel de una mascara
+            """
 
             # Center over mask
             if FH.base_mask[posY, posX] > 0:
                 self.PGData['group_flags'][i] += 64
+                '''
                 print('Center over mask')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
+
+            """
+            Descarte de grupo por contener centro en pixel rechazado por tener flujo demasiado alto
+            al ppio (mayor a 1500)
+            """
 
             # Center over median-rejected pixel
             if FH.median_rejection[posY, posX]:
                 self.PGData['group_flags'][i] += 128
+                '''
                 print('Center over median rejected pixel')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
+
+            """
+            Rechaza pixel por tener una varianza muy alta... (mayor a 250)
+            """
 
             # flux variance
             if FH.var_flux[posY, posX] > 250.0:
                 self.PGData['group_flags'][i] += 256
+                '''
                 print('Flux variance')
                 print('...................................')
                 print(self.PGData['mid_coords'][i, :])
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
+                '''
 
             self.PGData['group_flags_map'][self.PGData['pixel_coords'][i][:, 0], self.PGData['pixel_coords'][i][:, 1]] = \
             self.PGData['group_flags'][i]
+            distance = np.sqrt(np.sum((np.array([posY, posX]) - np.array(RD.SN_pos)) ** 2))
+            if distance < 5.0:
+                self.get_bin_decomp(self.PGData['group_flags'][i], o, RD)
+
 
     def draw_complying_pixel_groups(self, o, FH, KF, RD):
         """
@@ -287,7 +341,7 @@ class SNDetector(object):
         self.neighboring_pixels(RD)
 
         # Filter groups by morphological analysis
-        self.filter_groups(FH, KF)
+        self.filter_groups(FH, KF, RD, o)
 
 
     def update_candidates(self, o):
@@ -342,3 +396,21 @@ class SNDetector(object):
                 self.CandData[i]['status'] = -1
 
         RD.CandData = self.CandData
+
+    def get_bin_decomp(self, num, o, RD):
+        flags_stats_gr = np.zeros(9)
+        if num == 0 :
+            print('Candidato ideal...epoch: %d' % o)
+        for i in range(9):
+            if (num & 1) == 1:
+                print('Group flags SN: %d' % i)
+                flags_stats_gr[i] = i
+            num = num >> 1
+        plt.clf()
+        plt.hist(flags_stats_gr, bins=9, range=[1, 9], align='mid')
+        plt.title('Frecuencia alertas en SN')
+        plt.xlabel('Alerta')
+        plt.ylabel('Frecuencia')
+        plt.grid(True)
+        plt.savefig(RD.filter_type + '_' + str(RD.SN_index) + '_' + str(o) + '_' +str(RD.flux_thres) + '.png')
+

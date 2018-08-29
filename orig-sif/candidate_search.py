@@ -5,6 +5,7 @@ from Observer import Observer
 import numpy as np
 #### Time measurement method 1 ###
 from time import process_time
+import matplotlib.pyplot as plt
 
 #### Time measurement method 2 ####
 from unix_time import unix_time
@@ -70,7 +71,6 @@ print('\nTiempo total: %f\n' % (load_photometry_time+update_filter_time+draw_gro
 print('Loading photometry: %f\n' % (load_photometry_time))
 print('Updating filter: %f\n' % (update_filter_time))
 print('Drawing groups: %f\n' % (draw_groups_time))
-
 
 print('\nTiempo total2: %f\n' % (load_photometry_time2 + update_filter_time2 + draw_groups_time2))
 print('Loading photometry2: %f\n' % (load_photometry_time2))

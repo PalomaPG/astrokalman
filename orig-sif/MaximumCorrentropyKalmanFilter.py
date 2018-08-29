@@ -70,6 +70,7 @@ class MaximumCorrentropyKalmanFilter(KalmanFilter):
 
             # Start with states substraction
             C = np.concatenate((self.pred_state, np.expand_dims(z, 0))) - prev_iter_state[[0, 1, 0], :]
+
             if report_graphs:
                 self.graph_diffs(C)
 
@@ -127,16 +128,10 @@ class MaximumCorrentropyKalmanFilter(KalmanFilter):
         # Correct estimated covariance
         self.state_cov[0, :] = np.power(1 - self.kalman_gain[0, :], 2) * self.pred_state_cov[0, :] + np.power(
             self.kalman_gain[0, :], 2) * R
-        self.state_cov[1, :] = (1 - self.kalman_gain[0, :]) * (
-                    self.pred_state_cov[1, :] - self.kalman_gain[1, :] * self.pred_state_cov[0, :]) + self.kalman_gain[
-                                                                                                      0,
-                                                                                                      :] * self.kalman_gain[
-                                                                                                           1, :] * R
-        self.state_cov[2, :] = np.power(self.kalman_gain[1, :], 2) * self.pred_state_cov[0, :] - 2.0 * self.kalman_gain[
-                                                                                                       1,
-                                                                                                       :] * self.pred_state_cov[
-                                                                                                            1,
-                                                                                                            :] + self.pred_state_cov[
-                                                                                                                 2,
-                                                                                                                 :] + np.power(
-            self.kalman_gain[1, :], 2) * R
+        self.state_cov[1, :] = (1 - self.kalman_gain[0, :]) * \
+                               (self.pred_state_cov[1, :] - self.kalman_gain[1, :] * self.pred_state_cov[0, :]) + \
+                               self.kalman_gain[0,:] * self.kalman_gain[1, :] * R
+
+        self.state_cov[2, :] = np.power(self.kalman_gain[1, :], 2) * self.pred_state_cov[0, :] - \
+                               2.0 * self.kalman_gain[1, :] * self.pred_state_cov[1, :] +\
+                               self.pred_state_cov[2,:] + np.power( self.kalman_gain[1, :], 2) * R

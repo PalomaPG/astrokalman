@@ -87,15 +87,12 @@ class FITSHandler(object):
             print('At Paloma')
 
             # baseDir = '/run/media/tesla/Almacen/Huentelemu/R20' + year + 'CCDs/HiTS' + str(snIndex).zfill(2) + 'SN/'
-            baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_38/S25/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
+            baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_'+self.field+'/'+self.ccd+'/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
             # baseDir = 'C:/Users/Bahamut/Desktop/HiTS' + str(self.SN_index+1).zfill(2) + 'SN/'
             # baseDir = 'D:/Lab Int Comp/R2015CCDs/HiTS' + str(self.SN_index+1).zfill(2) + 'SN/'
-
-            self.data_names['base'] = glob(baseDir+'Blind15A_38_S25_*_image.fits.fz')[0]
-            self.data_names['mask_dq'] = glob(baseDir+'Blind15A_38_S25_*_dqmask.fits.fz')[0]
-
-            self.data_names['base_crblaster'] = glob(baseDir+'Blind15A_38_S25_*_image_crblaster.fits')[0]
-            self.data_names['science'] = glob(baseDir+'Blind15A_38_S25_*_image_crblaster_grid02_lanczos2.fits')
+            calDir = baseDir+'CALIBRATIONS/'
+            self.data_names['mask_dq'] = glob(baseDir+'Blind15A_*_dqmask.fits.fz')
+            self.data_names['science'] = glob(baseDir+'Blind15A_*_image_crblaster_grid02_lanczos2.fits')
 
             self.data_names['diff'] = []
             self.data_names['psf'] = []
@@ -107,23 +104,21 @@ class FITSHandler(object):
                 epoch = science_filename[ind - 2:ind]
                 #print epoch
 
-                self.data_names['diff'] += [np.sort(glob(baseDir + 'Diff*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
+                self.data_names['diff'] += glob(baseDir + 'Diff*' + self.ccd + '_' + epoch + '*grid02*')
 
                 # [baseDir+'Diff_Blind15A_38_S25_03-02t_grid02_lanczos2.fits']
-                self.data_names['psf'] += [np.sort(glob(baseDir + 'CALIBRATION/psf*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
+                self.data_names['psf'] += glob(calDir + 'psf*' + self.ccd + '_' + epoch + '*grid02*')
                 #print self.data_names['psf']
                 #[baseDir+'CALIBRATION/'+'psf_Blind15A_38_S25_03-02t_grid02_lanczos2.npy']
-                self.data_names['invVAR'] += [np.sort(glob(baseDir + 'invVAR*' + self.ccd + '_' + epoch + '*grid02*')).tolist()[0]]
+                self.data_names['invVAR'] += (glob(baseDir + 'invVAR*' + self.ccd + '_' + epoch + '*grid02*'))
                 #[baseDir+'invVAR_Blind15A_38_S25_03-02t_grid02_lanczos2.fits']
-                self.data_names['aflux'] += [np.sort(glob(baseDir + 'CALIBRATION/match_*' + epoch + '-02.npy')).tolist()[0]]
+                self.data_names['aflux'] += (glob(calDir + 'match_*' + epoch + '-02.npy'))
 
                 #[baseDir+'CALIBRATION/'+'match_Blind15A_38_S25_03-02.npy']
 
         print('Prepare base image')
 
-        #self.base_image = fits.open(self.data_names['base'])
-        self.base_image = fits.open(self.data_names['base'])[0].data
-        self.base_mask = fits.open(self.data_names['mask_dq'])[0].data
+        self.base_mask = fits.open(self.data_names['mask_dq'][0])[0].data
 
         '''
         dil base mask es una imagen de 0s y 1s?. No se si es la version nueva de python 2.7, o del modulo dilate que no

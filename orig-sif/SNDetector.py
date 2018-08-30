@@ -320,7 +320,7 @@ class SNDetector(object):
             self.PGData['group_flags'][i]
             distance = np.sqrt(np.sum((np.array([posY, posX]) - np.array(RD.SN_pos)) ** 2))
             if distance < 5.0:
-                self.get_bin_decomp(self.PGData['group_flags'][i], o, RD)
+                self.get_bin_decomp(self.PGData['group_flags'][i], o, RD, 9)
 
 
     def draw_complying_pixel_groups(self, o, FH, KF, RD):
@@ -397,17 +397,17 @@ class SNDetector(object):
 
         RD.CandData = self.CandData
 
-    def get_bin_decomp(self, num, o, RD):
-        flags_stats_gr = np.zeros(9)
+    def get_bin_decomp(self, num, o, RD, n):
+        flags_stats_gr = np.ones(n) * (-1)
         if num == 0 :
             print('Candidato ideal...epoch: %d' % o)
-        for i in range(9):
+        for i in range(n):
             if (num & 1) == 1:
                 print('Group flags SN: %d' % i)
                 flags_stats_gr[i] = i
             num = num >> 1
         plt.clf()
-        plt.hist(flags_stats_gr, bins=9, range=[1, 9], align='mid')
+        plt.hist(flags_stats_gr, bins=n, range=[0, n-1], align='mid')
         plt.title('Frecuencia alertas en SN')
         plt.xlabel('Alerta')
         plt.ylabel('Frecuencia')

@@ -54,7 +54,7 @@ class RunData(object):
 
         self.n_params = n_params
         if self.n_params > 0:
-            self.this_par = 2#int(self.index / n_CCDs)
+            self.this_par = 0#int(self.index / n_CCDs)
             print(int(self.this_par))
             self.index = self.index % n_CCDs
 

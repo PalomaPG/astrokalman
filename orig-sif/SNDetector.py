@@ -164,6 +164,7 @@ class SNDetector(object):
             posY, posX = self.PGData['mid_coords'][i, :]
 
             # Discard groups with negative flux around (bad substractions)
+            """
             NNFR = 4
             a, b = posY - NNFR, posY + NNFR + 1
             c, d = posX - NNFR, posX + NNFR + 1
@@ -176,6 +177,7 @@ class SNDetector(object):
                 print(self.PGData['group_flags'][i])
                 print('....................................\n')
                 '''
+            """
             # Local Maxima Radius in Science Image
             #Busca max local dentro imagen cientifica
             """

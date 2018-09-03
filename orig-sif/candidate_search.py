@@ -83,9 +83,11 @@ print('SN ' + ['not found ','found '][RD.SN_found])
 print('Number of unidentified objects: ' + str(RD.NUO))
 print('Conteo pixeles de acuerdo a flujo')
 print(np.mean(np.array(SN.count_pixel_cond_flux)))
+RD.save_results(OB)
+
 # Evaluate worth of second run
 RD.decide_second_run(OB)
-    
+
 # Second run: rescue historic info from candidates, if any
 KF, SN = RD.deploy_filter_and_detector(MJD)
 
@@ -104,7 +106,7 @@ for o in range(len(MJD)):
     load_photometry_time = (process_time()-ti) + load_photometry_time
     
     ti = process_time()
-    KF.update(MJD[o],FH)
+    KF.update(MJD[o], FH)
     update_filter_time = (process_time()-ti) + update_filter_time
     
     ti = process_time()

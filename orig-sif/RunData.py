@@ -11,7 +11,7 @@ class RunData(object):
 
     def __init__(self, year='15',
                  only_HiTS_SN=True,
-                 test_SN=13,
+                 test_SN=0,
                  filter_type='kalman',
                  n_params=0,
                  results_dir='./results/'):

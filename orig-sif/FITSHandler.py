@@ -178,7 +178,7 @@ class FITSHandler(object):
         :return void:
         """
         #sleep(2)
-        self.science = fits.open(self.data_names['science'][o])[0].data
+        #self.science = fits.open(self.data_names['science'][o])[0].data
         print('\n--------------------MJD observation: %d-------------' % o)
         print(fits.open(self.data_names['science'][o])[0].header['MJD-OBS'])
         self.diff = fits.open(self.data_names['diff'][o])[0].data

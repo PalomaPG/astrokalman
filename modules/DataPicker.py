@@ -48,8 +48,10 @@ class DataPicker(object):
 
         """
 
-        :param semester:
-        :param field:
+        :param semester: String. Semester where observations where made. It must indicate
+        the last two digits of the year and an 'A' or 'B' (character in capitals) to indicate if
+        it refers to first or second semester respectively.
+        :param field: Field number
         :param ccd:
         :return:
         """
@@ -79,6 +81,7 @@ class DataPicker(object):
         self.data['invDir'] = self.walking_through_files('invRegEx', 'invDir')
         self.data['afluxDir'] = self.walking_through_files('afluxRegEx', 'afluxDir')
         self.data['psfDir'] = self.walking_through_files('psfRegEx', 'psfDir')
+        print(self.data['scienceDir'])
 
     def walking_through_files(self, regex, dir_):
         """
@@ -96,8 +99,8 @@ class DataPicker(object):
 
     def select_science_images(self):
         """
-
-        :return:
+        Filters science images according to airmass: must be < 1.7
+        :return: void.
         """
 
         data = []
@@ -110,6 +113,7 @@ class DataPicker(object):
         self.mjd_order = np.argsort(self.mjd)
         self.mjd.sort()
         self.data['scienceDir'] = [data[i] for i in self.mjd_order]
+        print(self.data['scienceDir'])
 
     def select_images_dirs(self):
         """
@@ -164,35 +168,5 @@ class DataPicker(object):
                     new_content.append(npy_file)
 
         self.data[dir_] = new_content
-
-'''
-    def obs_mjds(self):
-        mjd_base = []
-        mjd_msk = []
-        mjd_crb = []
-
-        for image in self.data['baseDir']:
-            mjd_base.append(float(fits.open(image)[0].header['MJD-OBS']))
-
-        for image in self.data['maskDir']:
-            mjd_msk.append(float(fits.open(image)[0].header['MJD-OBS']))
-
-        for image in self.data['crblastDir']:
-            mjd_crb.append(float(fits.open(image)[0].header['MJD-OBS']))
-
-        mjd = list(set(mjd_base) & set(mjd_msk) & set(mjd_crb))
-        mjd.sort()
-        return mjd
-
-    def select_obs_images(self, mjd_lst, dir_):
-        new_content = []
-        for image in self.data[dir_]:
-            mjd = (float(fits.open(image)[0].header['MJD-OBS']))
-            if mjd in mjd_lst and np.around(mjd, 7) in self.mjd:
-                new_content.append(image)
-
-        self.data[dir_] = new_content
-
-'''
 
 

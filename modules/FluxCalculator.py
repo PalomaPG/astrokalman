@@ -2,6 +2,8 @@ import numpy as np
 from astropy.io import fits
 import scipy.ndimage as spn
 
+import matplotlib.pyplot as plt
+
 
 def naylor_photometry(invvar, diff, psf):
     input = diff * invvar
@@ -30,3 +32,43 @@ def calc_fluxes(diff_, psf_, invvar_, aflux_):
         flux[np.isnan(flux)] == .001
 
     return flux, var_flux, invvar
+
+
+def subsampled_median(image, image_size,  sampling):
+    """
+    Obtiene la mediana de subimagenes de image
+    :param image: float matrix, Imagen de entrada
+    :param sampling: int,
+    :return:
+    """
+    size1 = image_size[0]
+    size2 = image_size[1]
+    margin = 100
+    yAxis = range(margin, size1 - margin, sampling)
+    xAxis = range(margin, size2 - margin, sampling)
+    sampled_image = np.zeros((len(yAxis), len(xAxis)))
+    x = 0
+    for i in yAxis:
+        y = 0
+        for j in xAxis:
+            sampled_image[x, y] = image[i, j]
+            y += 1
+        x += 1
+    return np.median(sampled_image)
+
+def get_bin_decomp(self, num, o, RD, n):
+    flags_stats_gr = np.ones(n) * (-1)
+    if num == 0 :
+        print('Candidato ideal...epoch: %d' % o)
+    for i in range(n):
+        if (num & 1) == 1:
+            print('Group flags SN: %d' % i)
+            flags_stats_gr[i] = i
+        num = num >> 1
+    plt.clf()
+    plt.hist(flags_stats_gr, bins=n, range=[0, n-1], align='mid')
+    plt.title('Frecuencia alertas en SN')
+    plt.xlabel('Alerta')
+    plt.ylabel('Frecuencia')
+    plt.grid(True)
+    plt.savefig(RD.filter_type + '_' + str(RD.SN_index) + '_' + str(o) + '_' +str(RD.flux_thres) + '.png')

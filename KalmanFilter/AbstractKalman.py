@@ -14,13 +14,16 @@ class AbstractKalman(ABC):
         self.state[1] = init_state[1]
 
     @abstractclassmethod
-    def predict(self):
+    def predict(self, previous_time, current_time):
         pass
 
     @abstractclassmethod
-    def correct(self,  pred_state, pred_cov):
+    def correct(self, pred_state,  pred_cov):
         pass
 
     def update(self):
         self.predict()
         self.correct()
+
+    def get_states(self):
+        return self.state, self.state_cov

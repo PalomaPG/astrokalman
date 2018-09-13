@@ -56,6 +56,7 @@ def subsampled_median(image, image_size,  sampling):
         x += 1
     return np.median(sampled_image)
 
+
 def get_bin_decomp(self, num, o, RD, n):
     flags_stats_gr = np.ones(n) * (-1)
     if num == 0 :
@@ -72,3 +73,34 @@ def get_bin_decomp(self, num, o, RD, n):
     plt.ylabel('Frecuencia')
     plt.grid(True)
     plt.savefig(RD.filter_type + '_' + str(RD.SN_index) + '_' + str(o) + '_' +str(RD.flux_thres) + '.png')
+
+
+def cholesky(P):
+    """
+    :param P:
+    :return:
+    """
+    # Cholesky decomposition
+    L = np.zeros(P.shape)
+    L[0, :] = np.sqrt(P[0, :])
+    L[1, :] = P[1, :] / L[0, :]
+    L[2, :] = np.sqrt(P[2, :] - np.power(L[1, :], 2))
+    # Include inversion
+    inv_L = np.ones(L.shape)
+    inv_L[1, :] = -L[1, :]
+    inv_L[[0, 1], :] = inv_L[[0, 1], :] / L[0, :]
+    inv_L[[1, 2], :] = inv_L[[1, 2], :] / L[2, :]
+    return L, inv_L
+
+
+def image_stats(image, outlier_percentage=2.0):
+    """
+    :param image:
+    :param outlier_percentage:
+    :return:
+    """
+    vector = np.reshape(image, -1)
+    max_range = np.mean(np.abs(np.percentile(vector, [outlier_percentage, 100.0 - outlier_percentage])))
+    vector = vector[vector < max_range]
+    vector = vector[vector > -max_range]
+    return np.mean(vector), np.std(vector), vector

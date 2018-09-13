@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import mahotas as mh
-from .FluxCalculator import *
+from .utils import *
 
 class SNDetector(object):
 

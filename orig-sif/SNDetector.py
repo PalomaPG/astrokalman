@@ -103,13 +103,11 @@ class SNDetector(object):
         self.accum_compliant_pixels[o % self.n_consecutive_alerts, :] = (self.pixel_flags == 0)
         #print(sum(sum(self.accum_compliant_pixels)))
 
-
     def neighboring_pixels(self, RD):
         """
         Agrupa segun vecindario
         :return:
         """
-
         self.PGData = {}  # Pixel group data
         self.PGData['pixel_coords'] = []
 
@@ -323,7 +321,6 @@ class SNDetector(object):
             distance = np.sqrt(np.sum((np.array([posY, posX]) - np.array(RD.SN_pos)) ** 2))
             if distance < 5.0:
                 self.get_bin_decomp(self.PGData['group_flags'][i], o, RD, 9)
-
 
     def draw_complying_pixel_groups(self, o, FH, KF, RD):
         """

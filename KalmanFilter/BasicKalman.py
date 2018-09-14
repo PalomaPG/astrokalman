@@ -13,7 +13,6 @@ class BasicKalman(LinearKalman):
         self.R = R
         LinearKalman.__init__()
 
-
     def correct(self, pred_state, pred_cov):
 
         inv_S = pow(pred_cov[0, :] + self.R, -1)

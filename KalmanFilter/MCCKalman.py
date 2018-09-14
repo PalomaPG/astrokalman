@@ -1,6 +1,8 @@
 import numpy as np
 from .LinearKalman import LinearKalman
 from modules.utils import cholesky, image_stats
+
+
 class MCCKalman(LinearKalman):
 
     def __init__(self, z, R, epsilon=1e-6, max_iter=10, silverman_sigma=False):
@@ -44,6 +46,21 @@ class MCCKalman(LinearKalman):
             iter_P = L_p.copy()
             iter_P[[0, 1], :] *= (L_p[0, :] * C[0, :])
             kalman_gain = iter_P[[0, 1], :] / (iter_P[0, :] + C[2, :] * self.R)
+            iter_state = pred_state + kalman_gain * (self.z - pred_state[0, :])
+            stopped_pixels = np.linalg.norm(iter_state - prev_iter_state, axis=0) \
+                             <= np.linalg.norm(prev_iter_state, axis=0) * self.epsilon
+            if stopped_pixels.all():
+                break
+            prev_iter_state = iter_state.copy()
 
-        pass
+        # Correct estimated covariance
+        self.state_cov[0, :] = np.power(1 - kalman_gain[0, :], 2) * self.pred_cov[0, :] + np.power(
+            kalman_gain[0, :], 2) * self.R
+        self.state_cov[1, :] = (1 - kalman_gain[0, :]) * \
+                               (self.pred_cov[1, :] - kalman_gain[1, :] * self.pred_cov[0, :])\
+                               + kalman_gain[0,:] * kalman_gain[1, :] * self.R
+
+        self.state_cov[2, :] = np.power(kalman_gain[1, :], 2) * self.pred_cov[0, :] - \
+                               2.0 * kalman_gain[1, :] * self.pred_cov[1, :] +\
+                               self.pred_cov[2,:] + np.power( kalman_gain[1, :], 2) * self.R
 

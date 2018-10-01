@@ -8,11 +8,11 @@ class KalmanFilter(ABC):
         self.image_size = image_size
 
     def correct(self, pred_state,  pred_cov):
-        self.icorrect.correct(pred_state,  pred_cov)
+        return self.icorrect.correct(pred_state,  pred_cov)
 
     def predict(self, prev_time, curr_time):
-        self.ipredict.predict(prev_time, curr_time)
+        return self.ipredict.predict(prev_time, curr_time)
 
+    @abstractclassmethod
     def update(self, prev_time, curr_time):
-        pred_state, pred_cov = self.predict(prev_time, curr_time)
-        self.correct(pred_state, pred_cov)
+        pass

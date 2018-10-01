@@ -62,7 +62,24 @@ class Tests(unittest.TestCase):
         np.testing.assert_array_equal(var_flux, self.FH.var_flux)
 
     def test_basicKF(self):
-        pass
+        print('Filtering with Basic Kalman')
+        o = 0
+        flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
+        image_size = (4094, 2046)
+        state = np.zeros(tuple([2]) + image_size)
+        state_cov = np.zeros(tuple([3]) + image_size, dtype=int)
+        bkf = BasicKalman(flux, var_flux, state, state_cov)
+        state, state_cov = bkf.update(0.0, self.mjd[0])
+        kf = KalmanFilter()
+        self.FH.load_fluxes(o)
+        kf.update(self.mjd[0], self.FH)
+        print(state)
+        print(kf.state)
+        np.testing.assert_array_equal(kf.state, state)
+
+        #np.testing.assert_array_equal(kf.state_cov, state_cov)
+
+
 
     def test_MCKF(self):
         pass

@@ -5,12 +5,14 @@ from .BasicCorrect import BasicCorrect
 
 class BasicKalman(KalmanFilter):
 
-    def __init__(self, z, R):
-        self.z = z
-        self.R = R
-        self.ipredict = LinearPredict()
-        self.icorrect = BasicCorrect()
-        KalmanFilter.__init__()
+    def __init__(self, z, R, state, state_cov, image_size = (4094, 2046)):
+        KalmanFilter.__init__(self, image_size)
+        self.ipredict = LinearPredict(state, state_cov)
+        self.icorrect = BasicCorrect(z, R, state_cov)
+
+    def update(self, prev_time, curr_time):
+        pred_state, pred_cov = self.predict(prev_time, curr_time)
+        return self.correct(pred_state, pred_cov)
 
 
 

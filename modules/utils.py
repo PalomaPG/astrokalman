@@ -28,10 +28,10 @@ def calc_fluxes(diff_, psf_, invvar_, aflux_):
         flux = flux/aflux
         var_flux = var_flux/(aflux * aflux)
 
-        var_flux = np.sqrt(var_flux)
-        flux[np.isnan(flux)] == .001
+    var_flux = np.sqrt(var_flux)
+    flux[np.isnan(flux)] == .001
 
-    return flux, var_flux, invvar
+    return flux, var_flux
 
 
 def subsampled_median(image, image_size,  sampling):

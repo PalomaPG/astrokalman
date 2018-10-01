@@ -5,6 +5,8 @@ import pandas as pd
 from astropy.io import fits
 
 
+
+
 class DataPicker(object):
 
     """
@@ -41,8 +43,8 @@ class DataPicker(object):
 
         self.config_reg_expressions(semester, field_, ccd)
         self.collect_data()
-        self.select_science_images()
-        self.select_images_dirs()
+        self.filter_science_images()
+        self.select_images()
 
     def config_reg_expressions(self, semester, field, ccd):
 
@@ -97,7 +99,7 @@ class DataPicker(object):
             selected_base += filtered_files
         return selected_base
 
-    def select_science_images(self):
+    def filter_science_images(self):
         """
         Filters science images according to airmass: must be < 1.7
         :return: void.
@@ -115,7 +117,7 @@ class DataPicker(object):
         self.data['scienceDir'] = [data[i] for i in self.mjd_order]
         print(self.data['scienceDir'])
 
-    def select_images_dirs(self):
+    def select_images(self):
         """
 
         :return:
@@ -143,8 +145,7 @@ class DataPicker(object):
         mjd_order = np.argsort(mjd_lst)
         self.data[dir_] = [new_dir_content[i] for i in mjd_order]
 
-    def select_npys(self, dir_, ref_dir='diffDir',
-                      init_index=5, n_pos=5, rest_len=7):
+    def select_npys(self, dir_, ref_dir='diffDir', init_index=5, n_pos=5, rest_len=7):
 
         # for data including psf info: ref_dir = 'diffDir',init_index=5, n_pos=3, rest_len=7,
         # on the contrary ref_dir = 'scienceDir',init_index=0, n_pos=3, rest_len=0

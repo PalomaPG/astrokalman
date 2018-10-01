@@ -25,6 +25,6 @@ class LinearKalman(AbstractKalman):
         alpha = self.state_cov[1, :] + delta_t * self.state_cov[2, :] # reserve in original code
         pred_cov[0, :] = self.state_cov[0, :] + delta_t * (self.state_cov[1, :] + alpha) + Q[0]
         pred_cov[1, :] = alpha + Q[1]
-        pred_cov[2, :] = self.pred_cov[2, :] + Q[2]
+        pred_cov[2, :] = pred_cov[2, :] + Q[2]
 
         return  pred_state, pred_cov

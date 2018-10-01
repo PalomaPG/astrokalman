@@ -5,9 +5,6 @@ from KalmanFilter.LinearKalman import LinearKalman
 
 class TestKalmanLinearFilters(unittest.TestCase):
 
-
-
-
     def test_buildBasicFilter(self):
         image_size = (4094, 2046)
         flux = np.zeros(image_size)

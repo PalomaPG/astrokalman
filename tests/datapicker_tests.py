@@ -12,7 +12,6 @@ from sif.MaximumCorrentropyKalmanFilter import MaximumCorrentropyKalmanFilter
 from modules.DataPicker import DataPicker
 from modules.utils import *
 from KalmanFilter.BasicKalman import BasicKalman
-from KalmanFilter.MCCKalman import MCCKalman
 
 class Tests(unittest.TestCase):
 
@@ -35,8 +34,7 @@ class Tests(unittest.TestCase):
         self.invvar_ = picker.data['invDir']
         self.aflux_ = picker.data['afluxDir']
 
-
-
+    '''
     def test_input(self):
         print('Testing inputs ... Counting elements')
         self.assertCountEqual(self.mjd, self.FH.MJD)
@@ -60,32 +58,50 @@ class Tests(unittest.TestCase):
         flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
         np.testing.assert_array_equal(flux, self.FH.flux)
         np.testing.assert_array_equal(var_flux, self.FH.var_flux)
+    '''
 
     def test_basicKF(self):
         print('Filtering with Basic Kalman')
         o = 0
         flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
         image_size = (4094, 2046)
-        state = np.zeros(tuple([2]) + image_size)
+        state = 0.0*np.zeros(tuple([2]) + image_size)
         state_cov = np.zeros(tuple([3]) + image_size, dtype=int)
-        bkf = BasicKalman(flux, var_flux, state, state_cov)
-        state, state_cov = bkf.update(0.0, self.mjd[0])
+
+        state_cov[[0, 2], :] = 100.0
+
+        bkf = BasicKalman(flux, var_flux)
         kf = KalmanFilter()
         self.FH.load_fluxes(o)
-        kf.update(self.mjd[0], self.FH)
-        print(state)
-        print(kf.state)
-        np.testing.assert_array_equal(kf.state, state)
+        kf.update(0.0, self.FH)
 
-        #np.testing.assert_array_equal(kf.state_cov, state_cov)
+        state, state_cov = bkf.update(0.0, self.mjd[o], state, state_cov)
+        np.testing.assert_array_equal(state_cov, kf.state_cov)
+        np.testing.assert_array_equal(state, kf.state)
 
+        #o = 1
+
+        #flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
+        #pred_state, pred_cov = bkf.predict(self.mjd[o-1], self.mjd[o])
+
+
+        #np.testing.assert_array_equal()
 
 
     def test_MCKF(self):
         pass
+        '''
+        print('Filtering with MC Kalman')
+        o = 1
+        flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
+        image_size = (4094, 2046)
+        state = 0.0*np.zeros(tuple([2]) + image_size)
+        state_cov = np.zeros(tuple([3]) + image_size, dtype=int)
 
-
-
+        state_cov[[0, 2], :] = 100.0
+        #1mckf = MCCKalman(flux, var_flux)
+        kf = MaximumCorrentropyKalmanFilter()
+        '''
 
 if __name__ == '__main__':
     unittest.main()

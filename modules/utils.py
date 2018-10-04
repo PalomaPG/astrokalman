@@ -6,6 +6,13 @@ import matplotlib.pyplot as plt
 
 
 def naylor_photometry(invvar, diff, psf):
+    """
+
+    :param invvar:
+    :param diff:
+    :param psf:
+    :return:
+    """
     input = diff * invvar
     flux = spn.convolve(input, psf)
     psf2 = psf ** 2
@@ -16,6 +23,14 @@ def naylor_photometry(invvar, diff, psf):
 
 
 def calc_fluxes(diff_, psf_, invvar_, aflux_):
+    """
+
+    :param diff_:
+    :param psf_:
+    :param invvar_:
+    :param aflux_:
+    :return:
+    """
     diff = fits.open(diff_)[0].data
     psf = np.load(psf_)
     invvar = fits.open(invvar_)[0].data
@@ -58,6 +73,15 @@ def subsampled_median(image, image_size,  sampling):
 
 
 def get_bin_decomp(self, num, o, RD, n):
+    """
+
+    :param self:
+    :param num:
+    :param o:
+    :param RD:
+    :param n:
+    :return:
+    """
     flags_stats_gr = np.ones(n) * (-1)
     if num == 0 :
         print('Candidato ideal...epoch: %d' % o)

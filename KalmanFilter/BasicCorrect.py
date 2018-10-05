@@ -1,4 +1,3 @@
-import numpy as np
 from .ICorrect import ICorrect
 
 class BasicCorrect(ICorrect):

@@ -51,8 +51,7 @@ def calc_fluxes(diff_, psf_, invvar_, aflux_):
 
 def subsampled_median(image, image_size,  sampling):
     """
-    Obtiene la mediana de subimagenes de image
-    :param image: float matrix, Imagen de entrada
+    :param image: float matrix, input image
     :param sampling: int,
     :return:
     """
@@ -72,10 +71,8 @@ def subsampled_median(image, image_size,  sampling):
     return np.median(sampled_image)
 
 
-def get_bin_decomp(self, num, o, RD, n):
+def get_bin_decomp(num, o, RD, n):
     """
-
-    :param self:
     :param num:
     :param o:
     :param RD:

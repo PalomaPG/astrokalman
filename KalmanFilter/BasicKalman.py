@@ -1,4 +1,3 @@
-import numpy as np
 from .KalmanFilter import KalmanFilter
 from .LinearPredict import LinearPredict
 from .BasicCorrect import BasicCorrect

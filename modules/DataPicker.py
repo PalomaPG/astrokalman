@@ -8,7 +8,6 @@ from astropy.io import fits
 
 
 class DataPicker(object):
-
     """
     Collect data from specific directories according to CCD and field
     specified by the user in config_file
@@ -30,6 +29,8 @@ class DataPicker(object):
         self.mjd = []
         self.mjd_order = []
         self.results_df = None
+        self.field = field_
+        self.ccd = ccd
 
         with open(config_file, 'r') as f:
             for line in f:
@@ -83,7 +84,7 @@ class DataPicker(object):
         self.data['invDir'] = self.walking_through_files('invRegEx', 'invDir')
         self.data['afluxDir'] = self.walking_through_files('afluxRegEx', 'afluxDir')
         self.data['psfDir'] = self.walking_through_files('psfRegEx', 'psfDir')
-        print(self.data['scienceDir'])
+
 
     def walking_through_files(self, regex, dir_):
         """
@@ -170,4 +171,6 @@ class DataPicker(object):
 
         self.data[dir_] = new_content
 
+    def get_data(self):
+        return self.data
 

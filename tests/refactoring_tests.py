@@ -60,7 +60,7 @@ class Tests(unittest.TestCase):
         np.testing.assert_array_equal(flux, self.FH.flux)
         np.testing.assert_array_equal(var_flux, self.FH.var_flux)
     
-
+    '''
     def test_basicKF(self):
         print('Filtering with Basic Kalman')
         o = 0
@@ -123,8 +123,8 @@ class Tests(unittest.TestCase):
 
         np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
-    '''
 
+    '''
     def test_MCKF(self):
         print('Filtering with MC Kalman')
         o = 0
@@ -154,14 +154,13 @@ class Tests(unittest.TestCase):
         #kf.update(0.0, self.FH)
         delta_t = self.mjd[o] - 0.0
 
-
         np.testing.assert_array_equal(pred_cov, kf.pred_state_cov)
         np.testing.assert_array_equal(pred_state, kf.pred_state)
         np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
 
         kf.predict_at_new_time(self.mjd[o])
-        pred_state, pred_cov = bkf.predict(delta_t, state, state_cov, pred_state, pred_cov)
+        pred_state, pred_cov = mckf.predict(delta_t, state, state_cov, pred_state, pred_cov)
 
         np.testing.assert_array_equal(pred_cov, kf.pred_state_cov)
         np.testing.assert_array_equal(pred_state, kf.pred_state)
@@ -169,13 +168,13 @@ class Tests(unittest.TestCase):
         np.testing.assert_array_equal(state, kf.state)
 
         kf.correct_with_measurements(flux, var_flux)
-        state, state_cov = bkf.correct(flux, var_flux, pred_state, pred_cov, state, state_cov)
+        state, state_cov = mckf.correct(flux, var_flux, pred_state, pred_cov, state, state_cov)
 
         np.testing.assert_array_equal(pred_cov, kf.pred_state_cov)
         np.testing.assert_array_equal(pred_state, kf.pred_state)
         np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
-
+    '''
 
 if __name__ == '__main__':
     unittest.main()

@@ -15,7 +15,7 @@ class MCCorrect(ICorrect):
     def correct(self, z, R, pred_state, pred_cov, state, state_cov):
         chol_p, inv_chol_p = cholesky(pred_cov)
         prev_iter_state = pred_state.copy()
-        i = 1
+        j = 1
 
         while True:
             C = np.concatenate((pred_state, np.expand_dims(z, 0))) - prev_iter_state[[0, 1, 0], :]
@@ -35,9 +35,9 @@ class MCCorrect(ICorrect):
                     sigmas[0] = self.std_factor * std_pred_flux
                 sigmas[1] = sigmas[0]
                 for i in range(C.shape[0]):
-                    C[i, :] = np.exp(C[i, :] ** 2, 2*(sigmas[i] ** 2))
+                    C[i, :] = np.exp(C[i, :] ** 2 / (2*(sigmas[i] ** 2)))
             else:
-                C = np.exp(C ** 2, 2*(self.sigma ** 2))
+                C = np.exp(C ** 2/ (2*(self.sigma ** 2)))
 
             # Obtain iterative P
             iter_P = chol_p.copy()
@@ -54,9 +54,9 @@ class MCCorrect(ICorrect):
             if stopped_pixels.all():
                 break
             else:
-                i += 1
+                j += 1
                 prev_iter_state = iter_state.copy()
-            if i > self.max_iter:
+            if j > self.max_iter:
                 break
 
         # Correct estimated mean
@@ -69,4 +69,6 @@ class MCCorrect(ICorrect):
                           kalman_gain[0, :] * kalman_gain[1, :] * R
         state_cov[2, :] = np.power(kalman_gain[1, :], 2) * pred_cov[0, :] - 2.0 * kalman_gain[1, :] * pred_cov[1, :] + \
                           pred_cov[2, :] + np.power(kalman_gain[1, :], 2) * R
+
+
         return state, state_cov

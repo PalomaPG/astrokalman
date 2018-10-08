@@ -5,6 +5,6 @@ class IPredict(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def predict(self, prev_time, curr_time, state, state_cov, pred_state, pred_cov):
+    def predict(self, delta_t, state, state_cov, pred_state, pred_cov):
         pass
 

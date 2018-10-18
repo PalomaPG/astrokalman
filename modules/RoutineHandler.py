@@ -24,7 +24,7 @@ class RoutineHandler(object):
         del picker
         del data
 
-    def routine(self, data, mjds):
+    def routine_per_ccd_field(self, data, mjds):
 
         for i in range(len(mjds)):
             flux, var_flux = calc_fluxes(data['diffDir'][i], data['psfDir'][i], data['invDir'][i], data['afluxDir'][i])

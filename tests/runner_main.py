@@ -1,5 +1,7 @@
-from .DataPicker import DataPicker
-from .utils import *
+from modules.DataPicker import DataPicker
+from KalmanFilter.BasicKalman import BasicKalman
+from modules.utils import *
+from modules.unix_time import *
 import pandas as pd
 import numpy as np
 import sys
@@ -18,15 +20,23 @@ def main(obs_index_path, sn_index,  config_path):
     #print(obs_info)
     picker = DataPicker(config_path, obs_info.iloc[0]['Semester'], obs_info.iloc[0]['Field'], obs_info.iloc[0]['CCD'])
     #print(picker.data['scienceDir'])
-    diff_ = picker.data['diffDir'][0]
-    psf_ = picker.data['psfDir'][0]
-    invvar_ = picker.data['invDir'][0]
-    aflux_ = picker.data['afluxDir'][0]
+    diff_ = picker.data['diffDir']
+    psf_ = picker.data['psfDir']
+    invvar_ = picker.data['invDir']
+    aflux_ = picker.data['afluxDir']
 
-    flux, flux_var, invvar = calc_fluxes(diff_, psf_, invvar_, aflux_)
-    print(np.argwhere(flux>0))
-    print(flux_var)
 
+    t_flux = 0
+    t_filter = 0
+
+    for i in range(len(picker.mjd)):
+
+        t = unix_time(calc_fluxes, (diff_[i], psf_[i], invvar_[i], aflux_[i],))
+        t_flux = t['user'] + t_flux
+
+        t = unix_time()
+
+    print(t_flux)
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2], sys.argv[3])

@@ -159,3 +159,4 @@ class SourceFinder(object):
         pixel_flags = self.pixel_discard(science, state, state_cov, dil_mask, median_reject)
         self.grouping_pixels(pixel_flags)
         self.filter_groups(science, flux, var_flux, state, base_mask)
+        self.data_content.save_data()

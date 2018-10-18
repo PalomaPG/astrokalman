@@ -1,10 +1,9 @@
 import re
 import os
+import csv
 import numpy as np
 import pandas as pd
 from astropy.io import fits
-
-
 
 
 class DataPicker(object):
@@ -116,7 +115,6 @@ class DataPicker(object):
         self.mjd_order = np.argsort(self.mjd)
         self.mjd.sort()
         self.data['scienceDir'] = [data[i] for i in self.mjd_order]
-        print(self.data['scienceDir'])
 
     def select_images(self):
         """
@@ -174,3 +172,12 @@ class DataPicker(object):
     def get_data(self):
         return self.data
 
+
+    def verify_log(self):
+
+        log_path = os.path.join(self.files_settings['scienceDir'], 'log.txt')
+        if os.path.isfile(log_path):
+            content = csv.DictReader(log_path) #np.genfromtxt(log_path, delimiter=':', dtype=object)
+            pass
+        else:
+            pass

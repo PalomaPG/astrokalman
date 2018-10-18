@@ -22,14 +22,14 @@ class Tests(unittest.TestCase):
         self.MJD = self.FH.MJD
         obs_index_path = '/home/paloma/Documents/Memoria/Code/sif2/test.csv'
         sn_index = 13
-        config_path = '/home/paloma/Documents/Memoria/Code/sif2/modules/input_example.txt'
+        config_path = '/home/paloma/Documents/Memoria/Code/sif2/inputs/input_example.txt'
 
         obs = pd.read_csv(obs_index_path, sep=',', header=0)
         obs_info = obs.iloc[[sn_index]]
         picker = DataPicker(config_path, obs_info.iloc[0]['Semester'], obs_info.iloc[0]['Field'],
                             obs_info.iloc[0]['CCD'])
         self.mjd  = np.array(picker.mjd)
-
+        self.sci_ = picker.data['scienceDir']
         self.diff_ = picker.data['diffDir']
         self.psf_ = picker.data['psfDir']
         self.invvar_ = picker.data['invDir']
@@ -65,6 +65,13 @@ class Tests(unittest.TestCase):
         print('Filtering with Basic Kalman')
         o = 0
         flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
+        self.FH.load_fluxes(o)
+        self.assertListEqual(self.mjd.tolist(), self.FH.MJD.tolist())
+        self.assertListEqual(self.sci_, self.FH.data_names['science'])
+
+
+        np.testing.assert_array_equal(flux, self.FH.flux)
+        np.testing.assert_array_equal(var_flux, self.FH.var_flux)
 
 
         image_size = (4094, 2046)
@@ -85,12 +92,11 @@ class Tests(unittest.TestCase):
         np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
 
-        self.FH.load_fluxes(o)
 
         #kf.update(0.0, self.FH)
         delta_t = self.mjd[o] - 0.0
 
-
+        
         np.testing.assert_array_equal(pred_cov, kf.pred_state_cov)
         np.testing.assert_array_equal(pred_state, kf.pred_state)
         np.testing.assert_array_equal(state_cov, kf.state_cov)
@@ -116,15 +122,20 @@ class Tests(unittest.TestCase):
         o = 1
 
         flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
+        self.FH.load_fluxes(o)
+        np.testing.assert_array_equal(flux, self.FH.flux)
+        np.testing.assert_array_equal(var_flux, self.FH.var_flux)
+
         kf.time = self.mjd[o-1]
         kf.update(self.mjd[o], self.FH)
         state, state_cov = bkf.update((self.mjd[o]-self.mjd[o-1]), flux, var_flux, state, state_cov,
                                       pred_state, pred_cov)
 
-        np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
+        np.testing.assert_array_equal(state_cov, kf.state_cov)
 
-    '''
+
+
     def test_MCKF(self):
         print('Filtering with MC Kalman')
         o = 0
@@ -174,7 +185,12 @@ class Tests(unittest.TestCase):
         np.testing.assert_array_equal(pred_state, kf.pred_state)
         np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
-    '''
+
+
+    def test_sndetector(self):
+        #Basic Kalman Filter
+        #MCC Kalman Filter
+        pass
 
 if __name__ == '__main__':
     unittest.main()

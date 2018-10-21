@@ -1,6 +1,8 @@
-from .DataPicker import DataPicker
-from KalmanFilter import BasicKalman, MCKalman
-from .utils import *
+from DataPicker import DataPicker
+from KalmanFilter.BasicKalman import BasicKalman
+from KalmanFilter.MCKalman import MCKalman
+from SourceFinder import SourceFinder
+from utils import *
 import pandas as pd
 import numpy as np
 import sys
@@ -8,27 +10,80 @@ import sys
 
 class RoutineHandler(object):
 
-    def __init__(self, obs_index_path, route_templates):
+    def __init__(self, obs_index_path, route_templates, settings_file):
         self.obs = pd.read_csv(obs_index_path, sep=',', header=0)
         self.route_templates = route_templates
+        self.settings = settings_file
 
-    def method1(self, ccd_field_sem):
 
-        #ccd_field_sem = self.obs.iloc[[ccd_field_index]]
-        picker = DataPicker(self.route_templates, ccd_field_sem.iloc[0]['Semester'], ccd_field_sem.iloc[0]['Field'],
-                            ccd_field_sem.iloc[0]['CCD'])
+    def process_settings(self):
+        self.dict_settings = {}
+        with open(self.settings) as f:
+            for line in f:
+                (key, val) = line.split(sep='=')
+                self.dict_settings[key] =  float(val[:-1]) if val[:-1].replace('.', '', 1).isdigit()  else val[:-1]
+        self.image_size = (int(self.dict_settings['imgHeight']), int(self.dict_settings['imgWidth']))
+        self.kf = self.retrieve_kalman_filter(self.dict_settings['filter'])
 
-        data = picker.get_data()
-        self.routine(data, picker.mjd)
+    def retrieve_kalman_filter(self, kalman_string):
+        print(kalman_string)
+        if kalman_string == 'MCC':
+            return MCKalman()
+        else:
+            return BasicKalman()
 
-        del picker
-        del data
+    def routine(self, semester, field, ccd, results_path, last_mjd=0.0):
+        picker = DataPicker(self.route_templates, semester, field, ccd)
+        finder = SourceFinder(flux_thresh=self.dict_settings['flux_thresh'],
+                              flux_rate_thresh=self.dict_settings['flux_rate_thresh'],
+                              rate_satu=self.dict_settings['rate_satu'], image_size= self.image_size)
 
-    def routine_per_ccd_field(self, data, mjds):
+        #Setting filenames
+        diff_ = picker.data['diffDir']
+        psf_ = picker.data['psfDir']
+        invvar_ = picker.data['invDir']
+        aflux_ = picker.data['afluxDir']
 
-        for i in range(len(mjds)):
-            flux, var_flux = calc_fluxes(data['diffDir'][i], data['psfDir'][i], data['invDir'][i], data['afluxDir'][i])
-            bk = BasicKalman()
+        state = np.zeros(tuple([2]) + self.image_size, dtype=float)
+        state_cov = np.zeros(tuple([3]) + self.image_size, dtype=float)
+        state_cov[[0, 2], :] = self.dict_settings['init_var']
+        pred_state = state.copy()
+        pred_cov = state_cov.copy()
+
+        delta_t = picker.mjd[0]-last_mjd
+        n_obs = len(picker.mjd)
+
+        mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
+
+        for o in range(n_obs):
+            flux, var_flux = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
+            state, state_cov = self.kf.update(delta_t, flux, var_flux, state, state_cov,
+                                          pred_state, pred_cov)
+
+            science_ = fits.open(picker.data['scienceDir'][o])
+            if o < n_obs-1:
+                finder.draw_complying_pixel_groups(science_, state, state_cov, mask, dil_mask,
+                                               flux, var_flux, picker.mjd[o], field, ccd, results_path)
+                delta_t = picker.mjd[o] - picker.mjd[o - 1]
+
+            else:
+                finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
+                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, last=True)
+
+
+            science_.close()
+
+
+
+
+
+
+
+if __name__ == '__main__':
+    rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])
+    rh.process_settings()
+    rh.routine('15A', '41', 'N9', '/home/paloma/Documents/test_results/')
+
 
 
 

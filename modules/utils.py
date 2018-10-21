@@ -1,6 +1,7 @@
 import numpy as np
 from astropy.io import fits
 import scipy.ndimage as spn
+import mahotas as mh
 
 import matplotlib.pyplot as plt
 
@@ -125,3 +126,8 @@ def image_stats(image, outlier_percentage=2.0):
     vector = vector[vector < max_range]
     vector = vector[vector > -max_range]
     return np.mean(vector), np.std(vector), vector
+
+def mask_and_dilation(mask_path):
+    mask = fits.open(mask_path)[0].data > 0
+    dil_mask = mh.dilate(mask > 0, Bc=np.ones((5, 5), dtype=bool))
+    return mask, dil_mask

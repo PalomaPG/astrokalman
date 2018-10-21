@@ -40,7 +40,9 @@ predict_at_new_time(float): void
 correct(): void
 update(): void
 }
-class BasicKalman
+class BasicKalman{
+
+}
 class MCKalman{
 cholesky()
 inv_gauss(float, float)

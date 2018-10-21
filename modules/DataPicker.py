@@ -36,10 +36,10 @@ class DataPicker(object):
                 field, content = line.split(sep=' = ')
                 self.files_settings[field] = content[:-1]
 
-        results_file = semester+'_'+str(field_).zfill(2)+'_'+ccd+'.csv'
-        results_file = self.files_settings['results']+results_file
-        if os.path.isfile(results_file):
-            self.results_df = pd.read_csv(results_file, sep=',', header=0, index_col=0)
+        #results_file = semester+'_'+str(field_).zfill(2)+'_'+ccd+'.csv'
+        #results_file = self.files_settings['results']+results_file
+        #if os.path.isfile(results_file):
+        #    self.results_df = pd.read_csv(results_file, sep=',', header=0, index_col=0)
 
         self.config_reg_expressions(semester, field_, ccd)
         self.collect_data()

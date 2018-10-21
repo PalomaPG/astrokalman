@@ -1,0 +1,9 @@
+imgHeight=4094
+imgWidth=2046
+filter=Basic
+only_HiTS_SN=True
+results=/home/paloma/Documents/Memoria/results/
+init_var=100.0
+flux_thresh=500.0
+flux_rate_thresh=150.0
+rate_satu=3000.0

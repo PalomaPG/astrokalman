@@ -2,7 +2,7 @@ import numpy as np
 import os
 class DataContent(object):
 
-    def __init__(self, n_neighboring_pixels):
+    def __init__(self):
         """
 
         :param n_neighboring_pixels:
@@ -11,6 +11,10 @@ class DataContent(object):
         :param mjd:
         """
         self.pixel_coords = []
+        self.pixel_mid_coords = np.zeros((0, 2), dtype=int)
+
+
+    def set_mid_coords(self,  n_neighboring_pixels):
         self.pixel_mid_coords = np.zeros((n_neighboring_pixels, 2), dtype=int)
 
     def group_info(self, image_size):
@@ -39,8 +43,3 @@ class DataContent(object):
         else:
             np.savez(out_temp, pixel_coords=self.pixel_coords, pixel_mid_coords=self.pixel_mid_coords,
                      cand_mid_coords=cand_mid_coords, last_state=state, last_state_cov=state_cov)
-
-
-    def last_state_and_cov(self):
-        pass
-

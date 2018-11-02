@@ -32,12 +32,13 @@ def calc_fluxes(diff_, psf_, invvar_, aflux_):
     :param aflux_:
     :return:
     """
-    diff = fits.open(diff_)[0].data
+    diff = fits.open(diff_)
     psf = np.load(psf_)
-    invvar = fits.open(invvar_)[0].data
-
-    invvar[invvar == np.inf] = 0.01
-    flux, var_flux = naylor_photometry(invvar, diff, psf)
+    invvar = fits.open(invvar_)
+    invvar[0].data[invvar[0].data == np.inf] = 0.01
+    flux, var_flux = naylor_photometry(invvar[0].data, diff[0].data, psf)
+    diff.close()
+    invvar.close()
 
     if diff_.find('02t') > 0:
         aflux = np.load(aflux_)[0]
@@ -131,3 +132,16 @@ def mask_and_dilation(mask_path):
     mask = fits.open(mask_path)[0].data > 0
     dil_mask = mh.dilate(mask > 0, Bc=np.ones((5, 5), dtype=bool))
     return mask, dil_mask
+
+
+def median_rejection_calc(median_rejection, accum_median_flux, accum_med_flux_depth, flux, mjd_index):
+    if mjd_index<accum_med_flux_depth:
+        accum_median_flux[mjd_index, :] = flux
+    elif mjd_index == accum_med_flux_depth:
+        median_rejection = np.median(accum_median_flux, 0) > 1500.0
+
+    return median_rejection, accum_median_flux
+
+
+
+

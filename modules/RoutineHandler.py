@@ -1,12 +1,12 @@
-from DataPicker import DataPicker
+from modules.DataPicker import DataPicker
 from KalmanFilter.BasicKalman import BasicKalman
 from KalmanFilter.MCKalman import MCKalman
-from SourceFinder import SourceFinder
-from utils import *
+from modules.SourceFinder import SourceFinder
+from modules.utils import *
+from modules.TPDetector import TPDetector
 import pandas as pd
 import numpy as np
 import sys
-
 
 class RoutineHandler(object):
 
@@ -14,7 +14,6 @@ class RoutineHandler(object):
         self.obs = pd.read_csv(obs_index_path, sep=',', header=0)
         self.route_templates = route_templates
         self.settings = settings_file
-
 
     def process_settings(self):
         self.dict_settings = {}
@@ -26,18 +25,20 @@ class RoutineHandler(object):
         self.kf = self.retrieve_kalman_filter(self.dict_settings['filter'])
 
     def retrieve_kalman_filter(self, kalman_string):
-        print(kalman_string)
         if kalman_string == 'MCC':
             return MCKalman()
         else:
             return BasicKalman()
+
+    def iterate_over_data(self):
+        for index, row in self.obs.iterrows():
+            print(row['Field'], row['CCD'], row['Semester'])
 
     def routine(self, semester, field, ccd, results_path, last_mjd=0.0):
         picker = DataPicker(self.route_templates, semester, field, ccd)
         finder = SourceFinder(flux_thresh=self.dict_settings['flux_thresh'],
                               flux_rate_thresh=self.dict_settings['flux_rate_thresh'],
                               rate_satu=self.dict_settings['rate_satu'], image_size= self.image_size)
-
         #Setting filenames
         diff_ = picker.data['diffDir']
         psf_ = picker.data['psfDir']
@@ -57,37 +58,34 @@ class RoutineHandler(object):
 
         for o in range(n_obs):
             flux, var_flux = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
+            finder.accum_neg_flux[(o + finder.n_obs_prev) % len(finder.accum_neg_flux), :] = flux < 0
+
+            if o>0:
+                delta_t = picker.mjd[o] - picker.mjd[o - 1]
+
             state, state_cov = self.kf.update(delta_t, flux, var_flux, state, state_cov,
                                           pred_state, pred_cov)
 
             science_ = fits.open(picker.data['scienceDir'][o])
+
             if o < n_obs-1:
-                finder.draw_complying_pixel_groups(science_, state, state_cov, mask, dil_mask,
-                                               flux, var_flux, picker.mjd[o], field, ccd, results_path)
-                delta_t = picker.mjd[o] - picker.mjd[o - 1]
+                finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
+                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, o=o)
 
             else:
                 finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
-                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, last=True)
+                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, last=True, o=o)
 
 
             science_.close()
-
-
-
-
-
-
+        #self.look_candidates(results_path, field, ccd)
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])
     rh.process_settings()
-    rh.routine('15A', '41', 'N9', '/home/paloma/Documents/test_results/')
+    #rh.iterate_over_data()
+    results_path = '/home/paloma/Documents/test_results/'
 
-
-
-
-
-
-
-
+    rh.routine('15A', '41', 'N9', results_path)
+    tpd = TPDetector()
+    tpd.look_candidates(results_path, ccd='N9', field='41')

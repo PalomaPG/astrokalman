@@ -192,7 +192,7 @@ class SourceFinder(object):
         self.grouping_pixels(pixel_flags, o)
 
         #if self.any_pixels:
-        self.filter_groups(science, flux, var_flux, state, base_mask)
+        self.filter_groups(science, flux, var_flux, state, base_mask, median_reject=median_reject)
         if not last:
             self.data_content.save_data(path_, field, ccd, mjd)
         else:

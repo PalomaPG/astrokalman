@@ -29,7 +29,7 @@ class DataContent(object):
 
         return n_pixel_groups
 
-    def save_data(self, path_, field, ccd, mjd, state=None, state_cov=None, save_state_info=False):
+    def save_results(self, path_, field, ccd, mjd, state=None, state_cov=None, save_state_info=False):
         """
 
         :param path_:

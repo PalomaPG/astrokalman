@@ -7,7 +7,7 @@ class TPDetector(object):
     def __init__(self):
         self.cand_coords = []
 
-    def look_candidates(self, results_path, field, ccd):
+    def look_candidates(self, results_path, field, ccd, semester=None):
         regex_path = ('%ssources_mjd_' % results_path) +('[0-9]'*5)+'.'+ ('[0-9]' * 2)+ ('_field_%s_ccd_%s.npz' % (field, ccd))
         results_list = sorted(glob.glob(regex_path))
         for result in results_list:
@@ -18,7 +18,7 @@ class TPDetector(object):
         print(self.cand_coords)
         print(len(self.cand_coords))
 
-    def select_candidates(self,cand_mid_coords):
+    def list_candidates(self,cand_mid_coords):
         for coords in cand_mid_coords:
             if len(self.cand_coords) == 0:
                 self.cand_coords.append(coords)

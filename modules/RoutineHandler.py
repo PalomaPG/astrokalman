@@ -30,7 +30,7 @@ class RoutineHandler(object):
         else:
             return BasicKalman()
 
-    def iterate_over_data(self):
+    def iterate_over_sequences(self):
         for index, row in self.obs.iterrows():
             print(row['Field'], row['CCD'], row['Semester'])
 
@@ -68,13 +68,14 @@ class RoutineHandler(object):
 
             science_ = fits.open(picker.data['scienceDir'][o])
 
-            if o < n_obs-1:
-                finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
-                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, o=o)
+            finder.median_rejection, finder.accum_median_flux = median_rejection_calc(finder.median_rejection,
+                                                                                finder.accum_median_flux,
+                                                                                finder.accum_med_flux_depth,flux, o)
 
-            else:
-                finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
-                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, last=True, o=o)
+
+            finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
+                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, o=o,
+                                               median_reject=finder.median_rejection)
 
 
             science_.close()
@@ -88,4 +89,4 @@ if __name__ == '__main__':
 
     rh.routine('15A', '41', 'N9', results_path)
     tpd = TPDetector()
-    tpd.look_candidates(results_path, ccd='N9', field='41')
+    tpd.list_candidates(results_path, ccd='N9', field='41')

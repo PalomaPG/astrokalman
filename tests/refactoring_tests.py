@@ -39,7 +39,7 @@ class Tests(unittest.TestCase):
         #for i in range(min(len(self.diff_), len(self.FH.data_names['diff']))):
         #    print(self.diff_[i], self.FH.data_names['diff'][i])
 
-    '''
+
     def test_input(self):
 
         print('Testing inputs ... Counting elements')
@@ -47,7 +47,9 @@ class Tests(unittest.TestCase):
         self.assertCountEqual(self.mjd, self.FH.MJD)
         print(len(self.mjd))
         print(len(self.diff_))
-        print(len(self.FH.data_names['diff']))
+        print(len(self.FH.MJD))
+        print(len(self.FH.data_names['invVAR']))
+        print(self.sci_)
         self.assertCountEqual(self.diff_, self.FH.data_names['diff'])
         self.assertCountEqual(self.psf_, self.FH.data_names['psf'])
         self.assertCountEqual(self.invvar_, self.FH.data_names['invVAR'])
@@ -61,7 +63,7 @@ class Tests(unittest.TestCase):
         self.assertListEqual(self.invvar_, self.FH.data_names['invVAR'])
         self.assertListEqual(self.aflux_, self.FH.data_names['aflux'])
 
-    
+    '''
     def test_flux(self):
         print('Calculating and comparing flux info')
         o = 10
@@ -196,7 +198,7 @@ class Tests(unittest.TestCase):
         np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
      
-    '''
+    
     def test_global_basicKF(self):
 
         image_size = (4094, 2046)
@@ -212,15 +214,18 @@ class Tests(unittest.TestCase):
         kf = KalmanFilter()
 
         snd = SNDetector()
+        print('Threshold values...')
+        print(snd.flux_thres, snd.vel_flux_thres)
+        print('.............')
         sfr = SourceFinder(flux_thresh=500.0, flux_rate_thresh=150.0, rate_satu=3000.0)
         delta_t = (self.mjd[0] - 0.0)
-        print(delta_t)
 
         mask, dil_mask = mask_and_dilation(self.mask_[0])
 
         for o in range(len(self.mjd)):
             self.FH.load_fluxes(o)
             flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
+
             np.testing.assert_array_equal(flux, self.FH.flux)
             np.testing.assert_array_equal(var_flux, self.FH.var_flux)
 
@@ -239,28 +244,34 @@ class Tests(unittest.TestCase):
 
             sci = fits.open(self.sci_[o])
             snd.pixel_discrimination(o, self.FH, kf)
+
             sfr.median_rejection, sfr.accum_median_flux = median_rejection_calc(sfr.median_rejection,
                                                                                 sfr.accum_median_flux,
                                                                                 sfr.accum_med_flux_depth,flux, o)
+            np.testing.assert_array_equal(sfr.median_rejection, self.FH.median_rejection)
+
+            sfr.accum_neg_flux[o % sfr.accum_neg_flux_depth, :] = flux < 0
+
             pixel_flags = sfr.pixel_discard(sci[0].data, state, state_cov, dil_mask, sfr.median_rejection)
 
-            np.testing.assert_array_equal(sfr.median_rejection, self.FH.median_rejection)
             np.testing.assert_array_equal(pixel_flags, snd.pixel_flags)
 
 
             snd.neighboring_pixels()
+
+
             sfr.grouping_pixels(pixel_flags, o)
             np.testing.assert_array_equal(sfr.data_content.pixel_mid_coords, snd.PGData['mid_coords'])
             #self.assertListEqual(snd.PGData['pixel_coords'], sfr.data_content.pixel_coords)
 
             snd.filter_groups(self.FH, kf)
             sfr.filter_groups(sci[0].data, flux, var_flux, state, mask, sfr.median_rejection)
+
             np.testing.assert_array_equal(snd.PGData['group_flags'], sfr.data_content.group_flags)
             np.testing.assert_array_equal(sfr.data_content.group_flags_map, snd.PGData['group_flags_map'])
             sci.close()
-
-
     '''
+
     def test_global_MCCKF(self):
 
         image_size = (4094, 2046)
@@ -274,12 +285,20 @@ class Tests(unittest.TestCase):
 
         bkf = MCKalman()
         kf = MaximumCorrentropyKalmanFilter()
+
+        snd = SNDetector()
+        print('Threshold values...')
+        print(snd.flux_thres, snd.vel_flux_thres)
+        print('.............')
+        sfr = SourceFinder(flux_thresh=500.0, flux_rate_thresh=150.0, rate_satu=3000.0)
         delta_t = (self.mjd[0] - 0.0)
-        print(delta_t)
+
+        mask, dil_mask = mask_and_dilation(self.mask_[0])
 
         for o in range(len(self.mjd)):
             self.FH.load_fluxes(o)
             flux, var_flux = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
+
             np.testing.assert_array_equal(flux, self.FH.flux)
             np.testing.assert_array_equal(var_flux, self.FH.var_flux)
 
@@ -291,18 +310,48 @@ class Tests(unittest.TestCase):
             state, state_cov = bkf.update(delta_t, flux, var_flux, state, state_cov,
                                           pred_state, pred_cov)
 
-            print('Testing global basic KF... %d' % o)
+
             print(self.mjd[o])
             np.testing.assert_array_equal(state, kf.state)
             np.testing.assert_array_equal(state_cov, kf.state_cov)
 
+            sci = fits.open(self.sci_[o])
+            snd.pixel_discrimination(o, self.FH, kf)
 
+            sfr.median_rejection, sfr.accum_median_flux = median_rejection_calc(sfr.median_rejection,
+                                                                                sfr.accum_median_flux,
+                                                                                sfr.accum_med_flux_depth,flux, o)
+            np.testing.assert_array_equal(sfr.median_rejection, self.FH.median_rejection)
+
+            sfr.accum_neg_flux[o % sfr.accum_neg_flux_depth, :] = flux < 0
+
+            pixel_flags = sfr.pixel_discard(sci[0].data, state, state_cov, dil_mask, sfr.median_rejection)
+
+            np.testing.assert_array_equal(pixel_flags, snd.pixel_flags)
+
+
+            snd.neighboring_pixels()
+
+
+            sfr.grouping_pixels(pixel_flags, o)
+            np.testing.assert_array_equal(sfr.data_content.pixel_mid_coords, snd.PGData['mid_coords'])
+            #self.assertListEqual(snd.PGData['pixel_coords'], sfr.data_content.pixel_coords)
+
+            snd.filter_groups(self.FH, kf)
+            sfr.filter_groups(sci[0].data, flux, var_flux, state, mask, sfr.median_rejection)
+
+            np.testing.assert_array_equal(snd.PGData['group_flags'], sfr.data_content.group_flags)
+            np.testing.assert_array_equal(sfr.data_content.group_flags_map, snd.PGData['group_flags_map'])
+            sci.close()
+
+    '''
         
     def test_sndetector(self):
         #Basic Kalman Filter
         #MCC Kalman Filter
         pass
     '''
+
 
 
 if __name__ == '__main__':

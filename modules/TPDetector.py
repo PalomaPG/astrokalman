@@ -12,7 +12,7 @@ class TPDetector(object):
         results_list = sorted(glob.glob(regex_path))
         for result in results_list:
             data=np.load(result)
-            self.select_candidates(data['cand_mid_coords'])
+            self.list_candidates(data['cand_mid_coords'])
             data.close()
 
         print(self.cand_coords)

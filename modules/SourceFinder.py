@@ -1,5 +1,3 @@
-import numpy as np
-import mahotas as mh
 from modules.utils import *
 
 from modules.DataContent import DataContent
@@ -21,6 +19,7 @@ class SourceFinder(object):
         self.flux_rate_thresh = flux_rate_thresh
         self.rate_satu = rate_satu
         self.accum_neg_flux = np.zeros(tuple([accum_neg_flux_depth]) + image_size, dtype=bool)
+        self.accum_neg_flux_depth = accum_neg_flux_depth
         self.n_obs_prev = 0
         self.n_consecutive_obs = n_consecutive_obs
         self.any_pixels = False
@@ -48,6 +47,8 @@ class SourceFinder(object):
         :return:
         """
         n_conditions = 7
+
+
 
         science_median = subsampled_median(science, self.image_size, 20)
         pixel_conditions = np.zeros(tuple([n_conditions]) + self.image_size, dtype=bool) #Every pixel
@@ -102,14 +103,6 @@ class SourceFinder(object):
                 self.data_content.pixel_coords += [labeled_image_coords[labeled_image_values == i + 1, :]]
                 self.data_content.pixel_mid_coords[i, :] = np.round(np.mean(self.data_content.pixel_coords[i], 0))
 
-            print('PIXEL COORDS...Mine')
-            print(len(self.data_content.pixel_coords))
-            print(self.data_content.pixel_coords)
-            print('PIXEL COORDS...Mine')
-
-
-
-
     def filter_groups(self, science, flux, var_flux, state, base_mask, median_reject=None):
 
             n_pixel_groups = self.data_content.group_info(self.image_size)
@@ -119,13 +112,11 @@ class SourceFinder(object):
                 posY, posX = self.data_content.pixel_mid_coords[i, :]#self.PGData['mid_coords'][i, :]
 
                 # Discard groups with negative flux around (bad substractions)
-                """
                 NNFR = 4
                 a, b = posY - NNFR, posY + NNFR + 1
                 c, d = posX - NNFR, posX + NNFR + 1
                 if np.any(self.accum_neg_flux[:, a:b, c:d]):
                     self.data_content.group_flags[i] += 1
-                """
 
                 # Local Maximum Radius in Science Image
                 LMSR = 3
@@ -188,12 +179,21 @@ class SourceFinder(object):
                                     dil_mask, flux, var_flux,
                                      mjd, field, ccd, path_, o, median_reject=None, last=False):
 
+
+        self.accum_neg_flux[o % self.accum_neg_flux_depth, :] = flux < 0
+        self.median_rejection, self.accum_median_flux = median_rejection_calc(self.median_rejection,
+                                                                                  self.accum_median_flux,
+                                                                                  self.accum_med_flux_depth, flux, o)
+
         pixel_flags = self.pixel_discard(science, state, state_cov, dil_mask, median_reject)
         self.grouping_pixels(pixel_flags, o)
-
         #if self.any_pixels:
         self.filter_groups(science, flux, var_flux, state, base_mask, median_reject=median_reject)
+
+
+
         if not last:
-            self.data_content.save_data(path_, field, ccd, mjd)
+            self.data_content.save_results(path_, field, ccd, mjd)
         else:
-            self.data_content.save_data(path_, field, ccd, mjd, state=state, state_cov=state_cov, save_state_info=True)
+            self.data_content.save_results(path_, field, ccd, mjd, state=state,
+                                           state_cov=state_cov, save_state_info=True)

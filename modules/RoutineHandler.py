@@ -34,9 +34,15 @@ class RoutineHandler(object):
 
     def iterate_over_sequences(self):
         for index, row in self.obs.iterrows():
-            print(row['Field'], row['CCD'], row['Semester'])
+            self.routine(row['Semester'],row['Field'], row['CCD'])
 
-    def routine(self, semester, field, ccd, results_path, last_mjd=0.0):
+    def routine(self, semester, field, ccd,  last_mjd=0.0):
+
+        print('------------------------------------------------------')
+        print('Semester: %s | Field: %s | CCD: %s' % (semester, field, ccd))
+        print('------------------------------------------------------')
+
+        results_path = self.dict_settings['results']
         t_i = resource_usage(RUSAGE_SELF).ru_utime
         picker = DataPicker(self.route_templates, semester, field, ccd)
         t_f = resource_usage(RUSAGE_SELF).ru_utime
@@ -97,12 +103,15 @@ class RoutineHandler(object):
         print('Tiempo filtro de Kalman: %f' % filter_time )
         print('draw_groups_time: %f' % draw_groups_time)
 
+        tpd = TPDetector()
+        tpd.look_candidates(results_path, ccd=ccd, field=field)
+
+        print('---------------------------------------------------------------------')
+
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])
     rh.process_settings()
     #rh.iterate_over_sequences()
-    results_path = '/home/paloma/Documents/test_results/'
-
-    rh.routine('15A', '34', 'N3', results_path)
-    tpd = TPDetector()
-    tpd.look_candidates(results_path, ccd='N3', field='34')
+    rh.routine('15A', '41', 'N9')
+    #tpd = TPDetector()
+    #tpd.look_candidates(results_path, ccd='N27', field='22')

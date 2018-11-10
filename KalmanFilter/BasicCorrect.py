@@ -8,11 +8,9 @@ class BasicCorrect(ICorrect):
     def correct(self, z, R,  pred_state,  pred_cov, state, state_cov):
         inv_S = pow(pred_cov[0, :] + R, -1)
         # Obtain Kalman Gain
-        print(state_cov.shape)
         kalman_gain = pred_cov[[0, 1], :] * inv_S
         state = pred_state + kalman_gain * (z - pred_state[0, :])
         state_cov[[0, 1], :] = pred_cov[[0, 1], :] * (1.0 - kalman_gain[0, :])
-        print(state_cov.shape)
         state_cov[2, :] = pred_cov[2, :] - kalman_gain[1, :] * pred_cov[1, :]
 
         return state, state_cov

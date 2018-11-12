@@ -112,6 +112,6 @@ if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])
     rh.process_settings()
     #rh.iterate_over_sequences()
-    rh.routine('15A', '41', 'N9')
+    rh.routine('15A', '34', 'N3')
     #tpd = TPDetector()
     #tpd.look_candidates(results_path, ccd='N27', field='22')

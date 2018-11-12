@@ -82,18 +82,15 @@ def get_bin_decomp(num, o, RD, n):
     :return:
     """
     flags_stats_gr = np.ones(n) * (-1)
-    if num == 0 :
-        print('Candidato ideal...epoch: %d' % o)
     for i in range(n):
         if (num & 1) == 1:
-            print('Group flags SN: %d' % i)
             flags_stats_gr[i] = i
         num = num >> 1
     plt.clf()
     plt.hist(flags_stats_gr, bins=n, range=[0, n-1], align='mid')
-    plt.title('Frecuencia alertas en SN')
-    plt.xlabel('Alerta')
-    plt.ylabel('Frecuencia')
+    plt.title('Alert freq')
+    plt.xlabel('Alert')
+    plt.ylabel('Frequency')
     plt.grid(True)
     plt.savefig(RD.filter_type + '_' + str(RD.SN_index) + '_' + str(o) + '_' +str(RD.flux_thres) + '.png')
 
@@ -141,6 +138,41 @@ def median_rejection_calc(median_rejection, accum_median_flux, accum_med_flux_de
         median_rejection = np.median(accum_median_flux, 0) > 1500.0
 
     return median_rejection, accum_median_flux
+
+
+def sigma_points(mean_, cov_,
+                 kappa=0, alpha=10**(-3),
+                 beta = 2.0, L=2):
+
+    lambda_ = (alpha**2)*(L + kappa) - L
+
+    L, U = cholesky((L+lambda_)*cov_)
+    X_0 = mean_
+    X_1 = mean_ + L[[0,1], :]
+    X_2 = mean_ + L[[1,2], :]
+    X_3 = mean_ - L[[0,1], :]
+    X_4 = mean_ - L[[1,2], :]
+
+    W_m = np.zeros(5)
+    W_m[0] = lambda_ / (L + lambda_)
+    W_m[1:] = 1/(2*(L + lambda_))
+
+    W_c = np.zeros(5)
+    W_c[0] = lambda_/(L+lambda_) + (1 - alpha**2 + beta)
+    W_c[1:] = 1/(2*(L + lambda_))
+
+    return list([X_0, X_1, X_2, X_3, X_4]), W_m, W_c
+
+def apply_function_obs(func, W_m, Xs):
+    pass
+
+def apply_function_state(func, W_c):
+    pass
+
+
+if __name__ == '__main__':
+    sigma_points((4094, 2046), mean_=np.zeros((2, 4094, 2046)), cov_= np.ones((3, 4094, 2046))*32.45)
+    print(np.empty((3, 4094, 2046)))
 
 
 

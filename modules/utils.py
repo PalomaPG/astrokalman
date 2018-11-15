@@ -3,10 +3,9 @@ from astropy.io import fits
 import scipy.ndimage as spn
 import mahotas as mh
 
-
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
-from modules.unscented_functions import *
 
 def naylor_photometry(invvar, diff, psf):
     """
@@ -155,68 +154,6 @@ def median_rejection_calc(median_rejection, accum_median_flux, accum_med_flux_de
 
     return median_rejection, accum_median_flux
 
-
-def sigma_points(mean_, cov_,
-                 kappa=0, alpha=10**(-3),
-                 beta = 2.0, D=2):
-    """
-
-    :param mean_:
-    :param cov_:
-    :param kappa:
-    :param alpha:
-    :param beta:
-    :param L:
-    :return:
-    """
-
-    lambda_ = (alpha**2)*(D + kappa) - D
-
-    L, U = cholesky((D+lambda_)*cov_)
-    X_0 = mean_
-    X_1 = mean_ + L[[0,1], :]
-    X_2 = mean_ + L[[1,2], :]
-    X_3 = mean_ - L[[0,1], :]
-    X_4 = mean_ - L[[1,2], :]
-
-    W_m = np.zeros(5)
-    print(lambda_)
-    print(D + lambda_)
-    W_m[0] = lambda_ / (D + lambda_)
-    W_m[1:] = 1/(2*(D + lambda_))
-
-    W_c = np.zeros(5)
-    W_c[0] = lambda_/(D+lambda_) + (1 - alpha**2 + beta)
-    W_c[1:] = 1/(2*(D + lambda_))
-
-    return list([X_0, X_1, X_2, X_3, X_4]), W_m, W_c
-
-
-def perform(func, *args):
-    return func(*args)
-
-
-def propagate_func(func, W_m, W_c,  Xs, dim):
-    #Assesses Ys values
-    Ys = []
-    for i in range(dim):
-        Ys.append(perform(func, Xs[i]))
-
-    y_mean =  np.zeros((2, 4094, 2046))
-    for i in range(dim):
-        y_mean += W_m[i] * Ys[i]
-
-    y_cov = np.zeros((3, 4094, 2046))
-    for i in range(dim):
-        y_cov += W_c[i] * np.power((Ys[i] - y_mean), 2)
-
-    return y_mean, y_cov
-
-
-
-if __name__ == '__main__':
-    Xs, Wm, Wc = sigma_points(mean_=np.zeros((2, 4094, 2046)), cov_= np.ones((3, 4094, 2046)))
-   #propagate_func(simple_linear, Wm, Wc, Xs)
 
 
 

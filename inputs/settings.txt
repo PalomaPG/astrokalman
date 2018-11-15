@@ -1,6 +1,6 @@
 imgHeight=4094
 imgWidth=2046
-filter=MCC
+filter=Basic
 only_HiTS_SN=True
 results=/home/paloma/Documents/test_results/
 init_var=100.0

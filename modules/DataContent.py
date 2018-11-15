@@ -29,14 +29,14 @@ class DataContent(object):
 
         return n_pixel_groups
 
-    def save_results(self, path_, field, ccd, mjd, state=None, state_cov=None, save_state_info=False):
+    def save_results(self, path_, field, ccd, mjd, state=None, state_cov=None, save_state_info=False, semester='15A'):
         """
 
         :param path_:
         :return:
         """
         cand_mid_coords = self.pixel_mid_coords[self.group_flags == 0, :]
-        out_temp = os.path.join(path_, 'sources_mjd_%.2f_field_%s_ccd_%s' % (mjd, field, ccd))
+        out_temp = os.path.join(path_, 'sources_sem_%s_mjd_%.2f_field_%s_ccd_%s' % (semester, mjd, field, ccd))
         if not save_state_info:
             np.savez(out_temp, pixel_coords=self.pixel_coords, pixel_mid_coords=self.pixel_mid_coords,
                  cand_mid_coords=cand_mid_coords)

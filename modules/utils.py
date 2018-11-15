@@ -3,8 +3,10 @@ from astropy.io import fits
 import scipy.ndimage as spn
 import mahotas as mh
 
+
 import matplotlib.pyplot as plt
 
+from modules.unscented_functions import *
 
 def naylor_photometry(invvar, diff, psf):
     """
@@ -126,12 +128,26 @@ def image_stats(image, outlier_percentage=2.0):
     return np.mean(vector), np.std(vector), vector
 
 def mask_and_dilation(mask_path):
+    """
+
+    :param mask_path:
+    :return:
+    """
     mask = fits.open(mask_path)[0].data > 0
     dil_mask = mh.dilate(mask > 0, Bc=np.ones((5, 5), dtype=bool))
     return mask, dil_mask
 
 
 def median_rejection_calc(median_rejection, accum_median_flux, accum_med_flux_depth, flux, mjd_index):
+    """
+
+    :param median_rejection:
+    :param accum_median_flux:
+    :param accum_med_flux_depth:
+    :param flux:
+    :param mjd_index:
+    :return:
+    """
     if mjd_index<accum_med_flux_depth:
         accum_median_flux[mjd_index, :] = flux
     elif mjd_index == accum_med_flux_depth:
@@ -142,11 +158,21 @@ def median_rejection_calc(median_rejection, accum_median_flux, accum_med_flux_de
 
 def sigma_points(mean_, cov_,
                  kappa=0, alpha=10**(-3),
-                 beta = 2.0, L=2):
+                 beta = 2.0, D=2):
+    """
 
-    lambda_ = (alpha**2)*(L + kappa) - L
+    :param mean_:
+    :param cov_:
+    :param kappa:
+    :param alpha:
+    :param beta:
+    :param L:
+    :return:
+    """
 
-    L, U = cholesky((L+lambda_)*cov_)
+    lambda_ = (alpha**2)*(D + kappa) - D
+
+    L, U = cholesky((D+lambda_)*cov_)
     X_0 = mean_
     X_1 = mean_ + L[[0,1], :]
     X_2 = mean_ + L[[1,2], :]
@@ -154,25 +180,39 @@ def sigma_points(mean_, cov_,
     X_4 = mean_ - L[[1,2], :]
 
     W_m = np.zeros(5)
-    W_m[0] = lambda_ / (L + lambda_)
-    W_m[1:] = 1/(2*(L + lambda_))
+    print(lambda_)
+    print(D + lambda_)
+    W_m[0] = lambda_ / (D + lambda_)
+    W_m[1:] = 1/(2*(D + lambda_))
 
     W_c = np.zeros(5)
-    W_c[0] = lambda_/(L+lambda_) + (1 - alpha**2 + beta)
-    W_c[1:] = 1/(2*(L + lambda_))
+    W_c[0] = lambda_/(D+lambda_) + (1 - alpha**2 + beta)
+    W_c[1:] = 1/(2*(D + lambda_))
 
     return list([X_0, X_1, X_2, X_3, X_4]), W_m, W_c
 
-def apply_function_obs(func, W_m, Xs):
-    pass
 
-def apply_function_state(func, W_c):
-    pass
+def perform(func, *args):
+    return func(*args)
+
+
+def propagate_func(func, W_m, W_c,  Xs):
+    #Assesses Ys values
+    Ys = []
+    for i in range(len(Xs)):
+        Ys.append(perform(func, Xs[i]))
+
+    y_mean =  0
+    for i in range(len(Ys)):
+        y_mean += W_m[i] * Ys[i]
+
+    return y_mean
+
 
 
 if __name__ == '__main__':
-    sigma_points((4094, 2046), mean_=np.zeros((2, 4094, 2046)), cov_= np.ones((3, 4094, 2046))*32.45)
-    print(np.empty((3, 4094, 2046)))
+    Xs, Wm, Wc = sigma_points(mean_=np.zeros((2, 4094, 2046)), cov_= np.ones((3, 4094, 2046)))
+   #propagate_func(simple_linear, Wm, Wc, Xs)
 
 
 

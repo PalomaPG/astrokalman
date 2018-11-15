@@ -57,6 +57,7 @@ class RoutineHandler(object):
         invvar_ = picker.data['invDir']
         aflux_ = picker.data['afluxDir']
 
+        #Filter init cond.
         state = np.zeros(tuple([2]) + self.image_size, dtype=float)
         state_cov = np.zeros(tuple([3]) + self.image_size, dtype=float)
         state_cov[[0, 2], :] = self.dict_settings['init_var']
@@ -66,6 +67,7 @@ class RoutineHandler(object):
         delta_t = picker.mjd[0]-last_mjd
         n_obs = len(picker.mjd)
 
+        #Mask bad pixels and the neighbors
         mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
         calc_flux_time = 0.0
         filter_time = 0.0
@@ -73,6 +75,7 @@ class RoutineHandler(object):
 
         for o in range(n_obs):
             t_i = resource_usage(RUSAGE_SELF).ru_utime
+
             flux, var_flux = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
 
             t_f = resource_usage(RUSAGE_SELF).ru_utime
@@ -104,8 +107,9 @@ class RoutineHandler(object):
         print('draw_groups_time: %f' % draw_groups_time)
 
         tpd = TPDetector()
-        tpd.look_candidates(results_path, ccd=ccd, field=field)
-
+        cand_lst, can_n=tpd.look_candidates(results_path, ccd=ccd, field=field)
+        print(cand_lst)
+        print(can_n)
         print('---------------------------------------------------------------------')
 
 if __name__ == '__main__':

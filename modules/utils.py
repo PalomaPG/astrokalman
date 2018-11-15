@@ -196,17 +196,21 @@ def perform(func, *args):
     return func(*args)
 
 
-def propagate_func(func, W_m, W_c,  Xs):
+def propagate_func(func, W_m, W_c,  Xs, dim):
     #Assesses Ys values
     Ys = []
-    for i in range(len(Xs)):
+    for i in range(dim):
         Ys.append(perform(func, Xs[i]))
 
-    y_mean =  0
-    for i in range(len(Ys)):
+    y_mean =  np.zeros((2, 4094, 2046))
+    for i in range(dim):
         y_mean += W_m[i] * Ys[i]
 
-    return y_mean
+    y_cov = np.zeros((3, 4094, 2046))
+    for i in range(dim):
+        y_cov += W_c[i] * np.power((Ys[i] - y_mean), 2)
+
+    return y_mean, y_cov
 
 
 

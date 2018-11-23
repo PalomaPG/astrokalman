@@ -36,7 +36,7 @@ class SourceFinder(object):
         #self.median_rejection = np.zeros(image_size, dtype=bool)
 
 
-    def pixel_discard(self, science, state, state_cov, dil_mask, median_reject):
+    def pixel_discard(self, science, state, state_cov, dil_mask):
         """
 
         :param science: Science image
@@ -63,7 +63,7 @@ class SourceFinder(object):
         pixel_conditions[3, :] = state_cov[0, :] < 150.0  # check value
         pixel_conditions[4, :] = state_cov[2, :] < 150.0
         pixel_conditions[5, :] = np.logical_not(dil_mask)
-        pixel_conditions[6, :] = np.logical_not(median_reject)
+        pixel_conditions[6, :] = np.logical_not(self.median_rejection)
 
         #If pixels don't satisfy these conditions are labeled
         for i in range(n_conditions):
@@ -185,7 +185,7 @@ class SourceFinder(object):
                                                                                   self.accum_median_flux,
                                                                                   self.accum_med_flux_depth, flux, o)
 
-        pixel_flags = self.pixel_discard(science, state, state_cov, dil_mask, median_reject)
+        pixel_flags = self.pixel_discard(science, state, state_cov, dil_mask)
         self.grouping_pixels(pixel_flags, o)
         #if self.any_pixels:
         self.filter_groups(science, flux, var_flux, state, base_mask, median_reject=median_reject)

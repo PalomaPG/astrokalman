@@ -22,7 +22,7 @@ class Tests(unittest.TestCase):
         self.FH = FITSHandler(RD)
         self.MJD = self.FH.MJD
         obs_index_path = '/home/paloma/Documents/Memoria/Code/sif2/inputs/test.csv'
-        sn_index = 13
+        sn_index = 0
         config_path = '/home/paloma/Documents/Memoria/Code/sif2/inputs/input_example.txt'
 
         obs = pd.read_csv(obs_index_path, sep=',', header=0)
@@ -198,7 +198,7 @@ class Tests(unittest.TestCase):
         np.testing.assert_array_equal(state_cov, kf.state_cov)
         np.testing.assert_array_equal(state, kf.state)
      
-    
+    '''
     def test_global_basicKF(self):
 
         image_size = (4094, 2046)
@@ -344,7 +344,7 @@ class Tests(unittest.TestCase):
             np.testing.assert_array_equal(sfr.data_content.group_flags_map, snd.PGData['group_flags_map'])
             sci.close()
 
-    '''
+    
         
     def test_sndetector(self):
         #Basic Kalman Filter

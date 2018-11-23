@@ -12,3 +12,4 @@ orig-sif/sif_profile
 *.png
 inputs/settings.txt
 inputs/test.csv
+inputs/*

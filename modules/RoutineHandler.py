@@ -35,6 +35,10 @@ class RoutineHandler(object):
     def iterate_over_sequences(self):
         for index, row in self.obs.iterrows():
             self.routine(row['Semester'],row['Field'], row['CCD'])
+            tpd = TPDetector()
+            cand_lst, can_n = tpd.look_candidates(self.dict_settings['results'], ccd=row['CCD'], field=row['Field'])
+            print(cand_lst)
+            print(can_n)
 
     def routine(self, semester, field, ccd,  last_mjd=0.0):
 
@@ -43,10 +47,7 @@ class RoutineHandler(object):
         print('------------------------------------------------------')
 
         results_path = self.dict_settings['results']
-        t_i = resource_usage(RUSAGE_SELF).ru_utime
         picker = DataPicker(self.route_templates, semester, field, ccd)
-        t_f = resource_usage(RUSAGE_SELF).ru_utime
-        print('Data preparation: %f' % (t_f-t_i))
 
         finder = SourceFinder(flux_thresh=self.dict_settings['flux_thresh'],
                               flux_rate_thresh=self.dict_settings['flux_rate_thresh'],
@@ -106,10 +107,7 @@ class RoutineHandler(object):
         print('Tiempo filtro de Kalman: %f' % filter_time )
         print('draw_groups_time: %f' % draw_groups_time)
 
-        tpd = TPDetector()
-        cand_lst, can_n=tpd.look_candidates(results_path, ccd=ccd, field=field)
-        print(cand_lst)
-        print(can_n)
+
         print('---------------------------------------------------------------------')
 
 if __name__ == '__main__':

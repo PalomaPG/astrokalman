@@ -1,10 +1,13 @@
 import glob
 import numpy as np
 
+from modules.Visualizer import Visualizer
+
 
 class TPDetector(object):
 
     def __init__(self):
+        #self.visualizer = Visualizer()
         self.cand_coords = []
         self.cand_info = {}
 
@@ -15,7 +18,6 @@ class TPDetector(object):
         results_list = sorted(glob.glob(regex_path))
         for result in results_list:
             mjd = float(result.split('_')[5])
-            print(mjd)
             data=np.load(result)
             self.list_candidates(data['cand_mid_coords'], mjd)
             data.close()
@@ -24,22 +26,23 @@ class TPDetector(object):
 
     def list_candidates(self,cand_mid_coords, mjd):
         for coords in cand_mid_coords:
+            print(coords)
+            '''
             if len(self.cand_coords) == 0:
                 self.cand_coords.append(coords)
                 self.cand_info[str(coords)] = {'mjd' : list([mjd])}
-                print("Primer candidato")
+
             else:
                 new_candidate=True
                 for cand_coords in self.cand_coords:
                     if np.sqrt((cand_coords[0]-coords[0])^2 + (cand_coords[1]-coords[1])^2) < 4.0:
-                        print("Mismo candidato")
                         new_candidate=False
                         self.cand_info[str(coords)].append(mjd)
                         break
                 if new_candidate:
-                    print("Nuevo candidato")
                     self.cand_coords.append(coords)
                     self.cand_info[str(coords)]= list([mjd])
+            '''
 
 
 

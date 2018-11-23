@@ -91,8 +91,11 @@ class RoutineHandler(object):
                                                flux, var_flux, picker.mjd[o], field, ccd, results_path,
                                                data_content=data_content, o=o)
 
+            #data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux= flux,
+            #                          obs_flux_var=var_flux, state=state, state_cov=state_cov, diff=diff_[o],
+            #                          psf=psf_[o], mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o])
 
-
+            data_content.save_results(results_path, field, ccd, semester, mjd=picker.mjd[o])
             science_.close()
 
         print('---------------------------------------------------------------------')

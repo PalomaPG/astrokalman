@@ -190,8 +190,8 @@ class SourceFinder(object):
         #if self.any_pixels:
         self.filter_groups(science, flux, var_flux, state, base_mask, data_content)
 
-        if not last:
-            data_content.save_results(path_, field, ccd, mjd)
-        else:
-            data_content.save_results(path_, field, ccd, mjd, state=state,
-                                           state_cov=state_cov, save_state_info=True)
+        #if not last:
+            #data_content.save_results(path_, field, ccd, mjd)
+        #else:
+        #    data_content.save_results(path_, field, ccd, mjd, state=state,
+        #                                   state_cov=state_cov, save_state_info=True)

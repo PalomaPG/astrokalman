@@ -4,6 +4,7 @@ from KalmanFilter.MCKalman import MCKalman
 from modules.SourceFinder import SourceFinder
 from modules.utils import *
 from modules.TPDetector import TPDetector
+from modules.DataContent import DataContent
 from resource import getrusage as resource_usage, RUSAGE_SELF
 
 import pandas as pd
@@ -16,6 +17,7 @@ class RoutineHandler(object):
         self.obs = pd.read_csv(obs_index_path, sep=',', header=0)
         self.route_templates = route_templates
         self.settings = settings_file
+
 
     def process_settings(self):
         self.dict_settings = {}
@@ -73,7 +75,7 @@ class RoutineHandler(object):
 
 
         for o in range(n_obs):
-
+            data_content = DataContent()
             flux, var_flux = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
 
             if o>0:
@@ -86,15 +88,12 @@ class RoutineHandler(object):
 
             science_ = fits.open(picker.data['scienceDir'][o])
             finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
-                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, o=o)
+                                               flux, var_flux, picker.mjd[o], field, ccd, results_path,
+                                               data_content=data_content, o=o)
+
 
 
             science_.close()
-        #self.look_candidates(results_path, field, ccd)
-        print('Tiempo de calculo de flujo: %f' % calc_flux_time)
-        print('Tiempo filtro de Kalman: %f' % filter_time )
-        print('draw_groups_time: %f' % draw_groups_time)
-
 
         print('---------------------------------------------------------------------')
 

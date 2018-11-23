@@ -70,35 +70,23 @@ class RoutineHandler(object):
 
         #Mask bad pixels and the neighbors
         mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
-        calc_flux_time = 0.0
-        filter_time = 0.0
-        draw_groups_time = 0.0
+
 
         for o in range(n_obs):
-            t_i = resource_usage(RUSAGE_SELF).ru_utime
 
             flux, var_flux = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
 
-            t_f = resource_usage(RUSAGE_SELF).ru_utime
-            calc_flux_time += (t_f - t_i)
             if o>0:
                 delta_t = picker.mjd[o] - picker.mjd[o - 1]
 
-            t_i = resource_usage(RUSAGE_SELF).ru_utime
             state, state_cov = self.kf.update(delta_t, flux, var_flux, state, state_cov,
                                           pred_state, pred_cov)
-            t_f = resource_usage(RUSAGE_SELF).ru_utime
-            filter_time += (t_f - t_i)
 
 
 
-            t_i = resource_usage(RUSAGE_SELF).ru_utime
             science_ = fits.open(picker.data['scienceDir'][o])
             finder.draw_complying_pixel_groups(science_[0].data, state, state_cov, mask, dil_mask,
-                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, o=o,
-                                               median_reject=finder.median_rejection)
-            t_f = resource_usage(RUSAGE_SELF).ru_utime
-            draw_groups_time +=(t_f-t_i)
+                                               flux, var_flux, picker.mjd[o], field, ccd, results_path, o=o)
 
 
             science_.close()

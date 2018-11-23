@@ -103,7 +103,7 @@ class SourceFinder(object):
                 self.data_content.pixel_coords += [labeled_image_coords[labeled_image_values == i + 1, :]]
                 self.data_content.pixel_mid_coords[i, :] = np.round(np.mean(self.data_content.pixel_coords[i], 0))
 
-    def filter_groups(self, science, flux, var_flux, state, base_mask, median_reject=None):
+    def filter_groups(self, science, flux, var_flux, state, base_mask):
 
             n_pixel_groups = self.data_content.group_info(self.image_size)
 
@@ -163,7 +163,7 @@ class SourceFinder(object):
                     self.data_content.group_flags[i] += 64
 
                 # Center over median-rejected pixel
-                if median_reject[posY, posX]:
+                if self.median_rejection[posY, posX]:
                     self.data_content.group_flags[i] += 128
 
                 # flux variance
@@ -177,7 +177,7 @@ class SourceFinder(object):
 
     def draw_complying_pixel_groups(self, science, state, state_cov, base_mask,
                                     dil_mask, flux, var_flux,
-                                     mjd, field, ccd, path_, o, median_reject=None, last=False):
+                                     mjd, field, ccd, path_, o, last=False):
 
 
         self.accum_neg_flux[o % self.accum_neg_flux_depth, :] = flux < 0
@@ -188,9 +188,7 @@ class SourceFinder(object):
         pixel_flags = self.pixel_discard(science, state, state_cov, dil_mask)
         self.grouping_pixels(pixel_flags, o)
         #if self.any_pixels:
-        self.filter_groups(science, flux, var_flux, state, base_mask, median_reject=median_reject)
-
-
+        self.filter_groups(science, flux, var_flux, state, base_mask)
 
         if not last:
             self.data_content.save_results(path_, field, ccd, mjd)

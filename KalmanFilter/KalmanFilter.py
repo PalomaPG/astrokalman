@@ -14,4 +14,4 @@ class KalmanFilter(ABC):
 
     def update(self, delta_t, z, R, state, state_cov, pred_state, pred_cov):
         pred_state, pred_cov = self.predict(delta_t, state, state_cov, pred_state, pred_cov)
-        return self.correct(z, R, pred_state, pred_cov, state, state_cov)
+        return self.correct(z, R, pred_state, pred_cov, state, state_cov), pred_state, pred_cov

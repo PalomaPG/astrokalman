@@ -81,7 +81,7 @@ class RoutineHandler(object):
             if o>0:
                 delta_t = picker.mjd[o] - picker.mjd[o - 1]
 
-            state, state_cov = self.kf.update(delta_t, flux, var_flux, state, state_cov,
+            state, state_cov, pred_state, pred_cov = self.kf.update(delta_t, flux, var_flux, state, state_cov,
                                           pred_state, pred_cov)
 
 
@@ -95,10 +95,17 @@ class RoutineHandler(object):
             #                          obs_flux_var=var_flux, state=state, state_cov=state_cov, diff=diff_[o],
             #                          psf=psf_[o], mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o])
 
-            data_content.save_results(results_path, field, ccd, semester, mjd=picker.mjd[o])
+            data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux= flux,
+                                      obs_flux_var=var_flux, state=state, state_cov=state_cov, diff=diff_[o],
+                                      psf=psf_[o], mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
+                                      pred_state=pred_state, pred_state_cov=pred_cov)
             science_.close()
 
         print('---------------------------------------------------------------------')
+
+    def get_results(self):
+        tpd = TPDetector()
+        return tpd.look_candidates(self.dict_settings['results'], ccd='N9', field='41')
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])

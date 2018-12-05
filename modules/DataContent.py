@@ -30,7 +30,7 @@ class DataContent(object):
         return n_pixel_groups
 
     def save_results(self, path_, field, ccd, semester,  science, obs_flux, obs_flux_var, state, state_cov, pred_state,
-                     pred_state_cov, diff, psf, mask, dil_mask, mjd):
+                     pred_state_cov, diff, psf, mask, dil_mask, mjd, pixel_flags):
         """
 
         :param path_:
@@ -42,4 +42,5 @@ class DataContent(object):
         np.savez(out_temp, pixel_coords=self.pixel_coords, pixel_mid_coords=self.pixel_mid_coords,
                  cand_mid_coords=cand_mid_coords,  science=science, obs_flux= obs_flux, obs_flux_var=obs_flux_var,
                  state=state, state_cov=state_cov, diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=mjd,
-                 pred_state=pred_state, pred_state_cov = pred_state_cov)
+                 pred_state=pred_state, pred_state_cov = pred_state_cov, pixel_group_flags = self.group_flags,
+                 pixel_flags=pixel_flags)

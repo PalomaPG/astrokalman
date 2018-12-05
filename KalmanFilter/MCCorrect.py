@@ -71,4 +71,4 @@ class MCCorrect(ICorrect):
                           pred_cov[2, :] + np.power(kalman_gain[1, :], 2) * R
 
 
-        return state, state_cov
+        return state, state_cov, pred_state, pred_cov

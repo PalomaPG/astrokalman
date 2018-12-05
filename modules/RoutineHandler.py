@@ -37,16 +37,16 @@ class RoutineHandler(object):
     def iterate_over_sequences(self):
         for index, row in self.obs.iterrows():
             self.routine(row['Semester'],row['Field'], row['CCD'])
-            tpd = TPDetector()
-            cand_lst, can_n = tpd.look_candidates(self.dict_settings['results'], ccd=row['CCD'], field=row['Field'])
-            print(cand_lst)
-            print(can_n)
+            #tpd = TPDetector()
+            #cand_lst, can_n = tpd.look_candidates(self.dict_settings['results'], ccd=row['CCD'], field=row['Field'])
+            #print(cand_lst)
+            #print(can_n)
 
     def routine(self, semester, field, ccd,  last_mjd=0.0):
 
-        print('------------------------------------------------------')
+        print('-----------------------------------------------------------')
         print('Semester: %s | Field: %s | CCD: %s' % (semester, field, ccd))
-        print('------------------------------------------------------')
+        print('-----------------------------------------------------------')
 
         results_path = self.dict_settings['results']
         picker = DataPicker(self.route_templates, semester, field, ccd)
@@ -91,14 +91,10 @@ class RoutineHandler(object):
                                                flux, var_flux, picker.mjd[o], field, ccd, results_path,
                                                data_content=data_content, o=o)
 
-            #data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux= flux,
-            #                          obs_flux_var=var_flux, state=state, state_cov=state_cov, diff=diff_[o],
-            #                          psf=psf_[o], mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o])
-
             data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux= flux,
                                       obs_flux_var=var_flux, state=state, state_cov=state_cov, diff=diff_[o],
                                       psf=psf_[o], mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
-                                      pred_state=pred_state, pred_state_cov=pred_cov)
+                                      pred_state=pred_state, pred_state_cov=pred_cov, pixel_flags=finder.pixel_flags)
             science_.close()
 
         print('---------------------------------------------------------------------')

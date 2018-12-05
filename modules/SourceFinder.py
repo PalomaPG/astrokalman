@@ -185,8 +185,8 @@ class SourceFinder(object):
                                                                                   self.accum_median_flux,
                                                                                   self.accum_med_flux_depth, flux, o)
 
-        pixel_flags = self.pixel_discard(science, state, state_cov, dil_mask)
-        self.grouping_pixels(pixel_flags, o, data_content)
+        self.pixel_flags = self.pixel_discard(science, state, state_cov, dil_mask)
+        self.grouping_pixels(self.pixel_flags, o, data_content)
         #if self.any_pixels:
         self.filter_groups(science, flux, var_flux, state, base_mask, data_content)
 

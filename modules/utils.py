@@ -34,6 +34,7 @@ def calc_fluxes(diff_, psf_, invvar_, aflux_):
     :return:
     """
     diff = fits.open(diff_)
+    diff_data =  diff[0].data
     psf = np.load(psf_)
     invvar = fits.open(invvar_)
     invvar[0].data[invvar[0].data == np.inf] = 0.01
@@ -49,7 +50,7 @@ def calc_fluxes(diff_, psf_, invvar_, aflux_):
     var_flux = np.sqrt(var_flux)
     flux[np.isnan(flux)] == .001
 
-    return flux, var_flux
+    return flux, var_flux, diff_data, psf
 
 
 def subsampled_median(image, image_size,  sampling):

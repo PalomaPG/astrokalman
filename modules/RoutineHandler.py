@@ -35,8 +35,8 @@ class RoutineHandler(object):
             return BasicKalman()
 
     def iterate_over_sequences(self):
-        for index, row in self.obs.iterrows():
-            self.routine(row['Semester'],row['Field'], row['CCD'])
+        #for index, row in self.obs.iterrows():
+        self.routine(self.obs.ix[0,'Semester'],self.obs.ix[0,'Field'],self.obs.ix[0, 'CCD'])
             #tpd = TPDetector()
             #cand_lst, can_n = tpd.look_candidates(self.dict_settings['results'], ccd=row['CCD'], field=row['Field'])
             #print(cand_lst)
@@ -76,7 +76,7 @@ class RoutineHandler(object):
 
         for o in range(n_obs):
             data_content = DataContent()
-            flux, var_flux = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
+            flux, var_flux, diff, psf= calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
 
             if o>0:
                 delta_t = picker.mjd[o] - picker.mjd[o - 1]
@@ -91,9 +91,12 @@ class RoutineHandler(object):
                                                flux, var_flux, picker.mjd[o], field, ccd, results_path,
                                                data_content=data_content, o=o)
 
+            print('Difference image shape...')
+            print(diff.shape)
+            print('-----------------')
             data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux= flux,
-                                      obs_flux_var=var_flux, state=state, state_cov=state_cov, diff=diff_[o],
-                                      psf=psf_[o], mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
+                                      obs_flux_var=var_flux, state=state, state_cov=state_cov, diff=diff,
+                                      psf=psf, mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
                                       pred_state=pred_state, pred_state_cov=pred_cov, pixel_flags=finder.pixel_flags)
             science_.close()
 
@@ -101,7 +104,8 @@ class RoutineHandler(object):
 
     def get_results(self):
         tpd = TPDetector()
-        return tpd.look_candidates(self.dict_settings['results'], ccd='N9', field='41')
+        cands = tpd.look_candidates(self.dict_settings['results'], ccd='N9', field='41')
+        tpd.get_plots(coords=cands[4], results_path=self.dict_settings['results'], field=41, ccd='N9')
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])

@@ -65,9 +65,6 @@ def propagate_func(func, W_m, W_c,  Xs, D=2):
     return y_mean, y_cov
 
 
-
-
-
 ######## NON-LINEAR FUNCTIONS #########
 
 def simple_linear(X, a=100.0):

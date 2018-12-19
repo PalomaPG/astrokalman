@@ -5,7 +5,7 @@ import numpy as np
 
 def sigma_points(mean_, cov_,
                  kappa=0, alpha=10**(-3),
-                 beta = 2.0, D=2):
+                 beta =2.0, D=2):
     """
 
     :param mean_:
@@ -13,7 +13,7 @@ def sigma_points(mean_, cov_,
     :param kappa:
     :param alpha:
     :param beta:
-    :param L:
+    :param D:
     :return:
     """
 
@@ -21,19 +21,19 @@ def sigma_points(mean_, cov_,
 
     L, U = cholesky((D+lambda_)*cov_)
     X_0 = mean_
-    X_1 = mean_ + L[[0,1], :]
-    X_2 = mean_ + L[[1,2], :]
-    X_3 = mean_ - L[[0,1], :]
-    X_4 = mean_ - L[[1,2], :]
+    X_1 = mean_ + L[[0, 1], :]
+    X_2 = mean_ + L[[1, 2], :]
+    X_3 = mean_ - L[[0, 1], :]
+    X_4 = mean_ - L[[1, 2], :]
 
     W_m = np.zeros(5)
-    print(lambda_)
-    print(D + lambda_)
+    #print(lambda_)
+    #print(D + lambda_)
     W_m[0] = lambda_ / (D + lambda_)
     W_m[1:] = 1/(2*(D + lambda_))
 
     W_c = np.zeros(5)
-    W_c[0] = lambda_/(D+lambda_) + (1 - alpha**2 + beta)
+    W_c[0] = W_m[0] + (1 - alpha**2 + beta)
     W_c[1:] = 1/(2*(D + lambda_))
 
     return list([X_0, X_1, X_2, X_3, X_4]), W_m, W_c
@@ -69,8 +69,8 @@ def propagate_func(func, W_m, W_c,  Xs, D=2):
 
 def simple_linear(X, a=100.0):
 
-    flux = a*X[0,:]
-    rate_flux = X[1,:]
+    flux = a*X[0, :]
+    rate_flux = X[1, :]
 
     return np.array([flux, rate_flux])
 

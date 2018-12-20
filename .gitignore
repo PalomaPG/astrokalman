@@ -13,3 +13,7 @@ orig-sif/sif_profile
 inputs/settings.txt
 inputs/test.csv
 inputs/*
+mprofile*.dat
+output_sn*
+*puml
+sif/

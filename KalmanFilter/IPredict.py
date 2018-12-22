@@ -8,3 +8,6 @@ class IPredict(object):
     def predict(self, delta_t, state, state_cov, pred_state, pred_cov):
         pass
 
+    def define_params(self, *args):
+        pass
+

@@ -1,5 +1,5 @@
-from abc import ABC, abstractclassmethod
-
+from abc import ABC
+import numpy as np
 
 class KalmanFilter(ABC):
 
@@ -13,5 +13,12 @@ class KalmanFilter(ABC):
         return self.ipredict.predict(delta_t, state, state_cov, pred_state, pred_cov)
 
     def update(self, delta_t, z, R, state, state_cov, pred_state, pred_cov):
-        pred_state, pred_cov = self.predict(delta_t, state, state_cov, pred_state, pred_cov)
-        return self.correct(z, R, pred_state, pred_cov, state, state_cov)
+        self.pred_state, self.pred_cov = self.predict(delta_t, state, state_cov, pred_state, pred_cov)
+        self.state, self.state_cov = self.correct(z, R, self.pred_state, self.pred_cov, state, state_cov)
+
+    def define_params(self, init_var):
+        self.state = np.zeros(tuple([2]) + self.image_size, dtype=float)
+        self.state_cov = np.zeros(tuple([3]) + self.image_size, dtype=float)
+        self.state_cov[[0, 2], :] = init_var
+        self.pred_state = self.state.copy()
+        self.pred_cov = self.state_cov.copy()

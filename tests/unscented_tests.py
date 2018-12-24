@@ -62,8 +62,9 @@ class Tests(unittest.TestCase):
                                            pred_cov=pred_cov)
 
         np.testing.assert_array_equal(u_pred_state, pred_state)
-        ukf.icorrect.define_params(Xs)
-
+        ukf.icorrect.define_params(Xs, self.mjd[0])
+        u_state, u_state_cov = ukf.correct(flux, var_flux, pred_cov=u_pred_cov, pred_state=u_pred_state, state=u_state,
+                                           state_cov=u_state_cov)
         #np.testing.assert_array_almost_equal(u_pred_cov, pred_cov)
 
 if __name__ == '__main__':

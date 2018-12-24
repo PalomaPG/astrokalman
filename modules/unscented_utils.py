@@ -64,9 +64,10 @@ def propagate_func(func, W_m, W_c,  Xs, *args, D=2 ):
 
 ######## LINEAR FUNCTIONS #########
 
-def simple_linear(X, delta_t):
-
+def simple_linear(X, args):
+    delta_t = args[0]
     flux = X[0, :]+ delta_t*X[1, :]
+
     rate_flux = X[1, :]
 
     return np.array([flux, rate_flux])

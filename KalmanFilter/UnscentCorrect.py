@@ -15,17 +15,17 @@ class UnscentCorrect(ICorrect):
         self.Wc = Wc
 
     def define_params(self, *args):
-        if len(args) == 1:
+        if len(args) == 2:
             self.Xs = args[0]
+            self.delta_t = args[1]
 
     def correct(self, z, R, pred_state, pred_cov, state, state_cov):
-        print(self.Xs)
+        print('Correction process...')
         Ys = sigma_points(pred_state, pred_cov, lambda_=self.lambda_, d=self.d)
-        state, state_cov = propagate_func(self.f_func, self.Wm, self.Wc, Ys) # z^, S_k - R
+        state, state_cov = propagate_func(self.f_func, self.Wm, self.Wc, Ys, self.delta_t) # z^, S_k - R
         #Residual
         residual = z - state
         S = state_cov + R
-
         #Innovation
 
         h_diff = []
@@ -34,8 +34,8 @@ class UnscentCorrect(ICorrect):
         D = 2*self.d+1
 
         for i in range(D):
-            h_diff.append(perform(self.h_func, Ys[i]))
-            f_diff.append(perform(self.f_func, Xs[i]))
+            h_diff.append(perform(self.h_func, Ys[i],))
+            f_diff.append(perform(self.f_func, self.Xs[i], (self.delta_t,)))
 
         for i in range(D):
             h_diff[i] = h_diff[i] - state
@@ -44,11 +44,13 @@ class UnscentCorrect(ICorrect):
         h_diff = np.array(h_diff)
         f_diff = np.array(f_diff)
 
-        C = [(f_diff[i] @ h_diff[i].T) for i in range(D)]
-        C = [self.Wc[i]*C[i] for i in range(D)]
-        C = np.sum(C, axis=0)
-        #Optimal gain
-        K = C @ inv(S)
-        state = pred_state + K @ residual
-        state_cov = pred_cov - K @ S @ K.T
+        C = [(f_diff[i] @ np.transpose(h_diff[i], axes=[0, 2, 1])) for i in range(D)]
+        print('C already determined')
+        print(C[0].shape)
+        #C = [self.Wc[i]*C[i] for i in range(D)]
+        #C = np.sum(C, axis=0)
+        ##Optimal gain
+        #K = C @ inv(S)
+        #state = pred_state + K @ residual
+        #state_cov = pred_cov - K @ S @ K.T
         return state, state_cov

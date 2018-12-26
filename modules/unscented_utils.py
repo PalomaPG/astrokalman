@@ -15,7 +15,6 @@ def sigma_points(mean_, cov_, lambda_,  d=2):
     :param D:
     :return:
     """
-    print(d+lambda_)
     L, U = cholesky((d+lambda_)*cov_)
     X_0 = mean_
     X_1 = mean_ + L[[0, 1], :]

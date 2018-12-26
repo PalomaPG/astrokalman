@@ -1,8 +1,10 @@
 from modules.DataPicker import DataPicker
 from KalmanFilter.BasicKalman import BasicKalman
 from KalmanFilter.MCKalman import MCKalman
+from KalmanFilter.UnscentKalman import UnscentKalman
 from modules.SourceFinder import SourceFinder
 from modules.utils import *
+from modules.unscented_utils import identity, simple_linear
 from modules.TPDetector import TPDetector
 from modules.DataContent import DataContent
 from resource import getrusage as resource_usage, RUSAGE_SELF
@@ -18,7 +20,6 @@ class RoutineHandler(object):
         self.route_templates = route_templates
         self.settings = settings_file
 
-
     def process_settings(self):
         self.dict_settings = {}
         with open(self.settings) as f:
@@ -30,13 +31,18 @@ class RoutineHandler(object):
 
     def retrieve_kalman_filter(self, kalman_string):
         if kalman_string == 'MCC':
-            return MCKalman()
+            return MCKalman(sigma_a=self.dict_settings['sigma_a'], std_factor=self.dict_settings['std_factor'],
+                            sigma=self.dict_settings['sigma'], max_iter=int(self.dict_settings['max_iter']),
+                            epsilon=float(self.dict_settings['epsilon']),
+                            silverman_sigma=int(self.dict_settings['silverman_sigma']), image_size=self.image_size)
+        elif kalman_string=='Basic':
+            return BasicKalman(sigma_a=self.dict_settings['sigma_a'], image_size=self.image_size)
         else:
-            return BasicKalman()
+            return UnscentKalman(simple_linear, identity)
 
     def iterate_over_sequences(self):
         #for index, row in self.obs.iterrows():
-        self.routine(self.obs.ix[0,'Semester'],self.obs.ix[0,'Field'],self.obs.ix[0, 'CCD'])
+        self.routine(self.obs.ix[0, 'Semester'], self.obs.ix[0, 'Field'], self.obs.ix[0, 'CCD'])
 
     def routine(self, semester, field, ccd,  last_mjd=0.0):
 

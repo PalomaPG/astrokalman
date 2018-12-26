@@ -1,5 +1,4 @@
 from .ICorrect import ICorrect
-from numpy.linalg import inv
 from modules.unscented_utils import *
 
 
@@ -15,14 +14,20 @@ class UnscentCorrect(ICorrect):
         self.Wc = Wc
 
     def define_params(self, *args):
-        if len(args) == 2:
+        if len(args) == 3:
             self.Xs = args[0]
             self.delta_t = args[1]
+            self.image_size = args[2]
+        elif len(args) == 2:
+            self.Xs = args[2]
+            self.delta_t = args[1]
+        elif len(args) == 1:
+            self.delta_t =args[1]
 
     def correct(self, z, R, pred_state, pred_cov, state, state_cov):
-        print('Correction process...')
-        Ys = sigma_points(pred_state, pred_cov, lambda_=self.lambda_, d=self.d)
-        state, state_cov = propagate_func(self.f_func, self.Wm, self.Wc, Ys, self.delta_t) # z^, S_k - R
+        print(self.delta_t)
+        #Ys = sigma_points(pred_state, pred_cov, lambda_=self.lambda_, d=self.d)
+        state, state_cov = propagate_func(self.f_func, self.Wm, self.Wc, self.Xs, self.delta_t) # z^, S_k - R
         #Residual
         residual = z - state
         S = state_cov + R
@@ -34,23 +39,56 @@ class UnscentCorrect(ICorrect):
         D = 2*self.d+1
 
         for i in range(D):
-            h_diff.append(perform(self.h_func, Ys[i],))
+            h_diff.append(perform(self.h_func, self.Xs[i],))
             f_diff.append(perform(self.f_func, self.Xs[i], (self.delta_t,)))
 
         for i in range(D):
             h_diff[i] = h_diff[i] - state
             f_diff[i] = f_diff[i] - pred_state
 
-        h_diff = np.array(h_diff)
-        f_diff = np.array(f_diff)
-
-        C = [(f_diff[i] @ np.transpose(h_diff[i], axes=[0, 2, 1])) for i in range(D)]
-        print('C already determined')
-        print(C[0].shape)
-        #C = [self.Wc[i]*C[i] for i in range(D)]
-        #C = np.sum(C, axis=0)
+        C = multiple_dot_products(h_diff, f_diff, self.Wc, image_size=self.image_size)
         ##Optimal gain
-        #K = C @ inv(S)
-        #state = pred_state + K @ residual
-        #state_cov = pred_cov - K @ S @ K.T
+        K = matrices_dot_product(C, matrix_inverse(S))
+        state = pred_state + matrix_vector_dot_product(K, residual)
+        state_cov = pred_cov - matrices_dot_product(K, matrices_dot_product(S, K))#K @ S @ K.T
         return state, state_cov
+
+
+def multiple_dot_products(m1_lst, m2_lst, w_c, image_size):
+    product = np.zeros(shape=tuple([3]) + image_size)
+    l = len(m1_lst)
+    for i in range(l):
+        product[0] = w_c[i]*m1_lst[i][0, :]*m2_lst[i][0, :]+product[0]
+        product[1] = w_c[i]*m1_lst[i][0, :]*m2_lst[i][1, :]+product[1]
+        product[2] = w_c[i]*m1_lst[i][1, :]*m2_lst[i][1, :]+product[2]
+
+    return product
+
+
+def matrix_inverse(mat):
+    new_mat = np.zeros(shape=mat.shape)
+    factor = mat[0] * mat[2] - mat[1] * mat[1]
+    new_mat[0] = mat[2]/factor
+    new_mat[1] = -mat[1]/factor
+    new_mat[2] = mat[0]/factor
+    return new_mat
+
+
+def matrices_dot_product(m1, m2):
+
+    product = np.zeros(shape=m1.shape)
+    product[0] = m1[0]*m2[0] + m1[1]*m2[1]
+    product[1] = m1[0]*m2[1] + m1[1]*m2[2]
+    product[2] = m1[1]*m2[1] + m1[2]*m2[2]
+    return product
+
+
+def matrix_vector_dot_product(m, v):
+    product = np.zeros(shape=v.shape)
+    product[0] = m[0]*v[0] + m[1]*v[1]
+    product[1] = m[1]*v[0] + m[2]*v[1]
+    return product
+
+
+
+

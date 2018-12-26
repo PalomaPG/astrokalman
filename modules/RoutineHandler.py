@@ -93,11 +93,11 @@ class RoutineHandler(object):
                                                flux, var_flux, picker.mjd[o], field, ccd, results_path,
                                                data_content=data_content, o=o)
 
-            data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux=flux,
-                                      obs_flux_var=var_flux, state=self.kf.state, state_cov=self.kf.state_cov,
-                                      diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
-                                      pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
-                                      pixel_flags=finder.pixel_flags)
+            #data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux=flux,
+            #                          obs_flux_var=var_flux, state=self.kf.state, state_cov=self.kf.state_cov,
+            #                          diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
+            #                          pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
+            #                          pixel_flags=finder.pixel_flags)
             print('.........MJD: %f..........' % (picker.mjd[o]))
             print(data_content.pixel_mid_coords[data_content.group_flags == 0, :])
             print('...............................')

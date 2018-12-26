@@ -1,7 +1,7 @@
 imgHeight=4094
 imgWidth=2046
 filter=Basic
-results=/home/pperez/Thesis/RESULTS/BASIC/
+results=/home/paloma/Documents/RESULTS/BASIC/
 init_var=100.0
 flux_thresh=200.0
 flux_rate_thresh=50.0

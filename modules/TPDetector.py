@@ -12,12 +12,16 @@ class TPDetector(object):
         self.cand_info = {}
 
     def look_candidates(self, results_path, field, ccd, semester='15A'):
+        print('----look candidates-----')
+        print(results_path)
         regex_path = ('%ssources_sem_' % results_path) + ('%s_mjd_' % semester)+\
                      ('[0-9]'*5)+'.'+ ('[0-9]' * 2)+\
                      ('_field_%s_ccd_%s.npz' % (field, ccd))
         results_list = sorted(glob.glob(regex_path))
+        print(results_list)
         for result in results_list:
-            mjd = float(result.split('_')[5])
+            print(result)
+            mjd = float(result.split('_')[6])
             data=np.load(result)
             self.list_candidates(data['cand_mid_coords'], mjd)
             data.close()

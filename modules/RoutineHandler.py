@@ -16,10 +16,11 @@ import sys
 
 class RoutineHandler(object):
 
-    def __init__(self, obs_index_path, route_templates, settings_file):
+    def __init__(self, obs_index_path, route_templates, settings_file, index):
         self.obs = pd.read_csv(obs_index_path, sep=',', header=0)
         self.route_templates = route_templates
         self.settings = settings_file
+        self.index = int(index)
 
     def process_settings(self):
         self.dict_settings = {}
@@ -43,12 +44,12 @@ class RoutineHandler(object):
             return UnscentKalman(simple_linear, identity)
 
     def iterate_over_sequences(self):
-        self.routine(self.obs.ix[0, 'Semester'], self.obs.ix[0, 'Field'], self.obs.ix[0, 'CCD'])
+        self.routine(self.obs.ix[self.index, 'Semester'], self.obs.ix[self.index, 'Field'], self.obs.ix[self.index, 'CCD'])
 
     def config_results_path(self):
         results_path = self.dict_settings['results']
         if not path.exists(results_path):
-            makedirs(results_path)
+            makedirs(results_path, exist_ok=True)
         return results_path
 
     def routine(self, semester, field, ccd,  last_mjd=0.0):
@@ -109,7 +110,7 @@ class RoutineHandler(object):
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])
     rh.process_settings()
-    #rh.iterate_over_sequences()
+    rh.iterate_over_sequences()
     rh.routine('15A', '34', 'N3')
     #tpd = TPDetector()
     #tpd.look_candidates(results_path, ccd='N27', field='22')

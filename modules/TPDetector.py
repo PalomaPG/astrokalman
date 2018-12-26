@@ -21,7 +21,7 @@ class TPDetector(object):
             data=np.load(result)
             self.list_candidates(data['cand_mid_coords'], mjd)
             data.close()
-
+        print(self.cand_info)
         return self.cand_coords
 
     def list_candidates(self,cand_mid_coords, mjd):
@@ -40,6 +40,7 @@ class TPDetector(object):
                 if new_candidate:
                     self.cand_coords.append(coords)
                     self.cand_info[str(coords)]= list([mjd])
+
 
     def get_plots(self, coords, results_path, field, ccd, semester='15A'):
 

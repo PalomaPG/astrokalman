@@ -7,10 +7,11 @@ from modules.utils import *
 from modules.unscented_utils import identity, simple_linear
 from modules.TPDetector import TPDetector
 from modules.DataContent import DataContent
-from resource import getrusage as resource_usage, RUSAGE_SELF
+#from resource import getrusage as resource_usage, RUSAGE_SELF
 
 import pandas as pd
-import numpy as np
+from os import path, makedirs
+#import numpy as np
 import sys
 
 class RoutineHandler(object):
@@ -36,13 +37,19 @@ class RoutineHandler(object):
                             epsilon=float(self.dict_settings['epsilon']),
                             silverman_sigma=int(self.dict_settings['silverman_sigma']), image_size=self.image_size)
         elif kalman_string=='Basic':
+            print('Basic')
             return BasicKalman(sigma_a=self.dict_settings['sigma_a'], image_size=self.image_size)
         else:
             return UnscentKalman(simple_linear, identity)
 
     def iterate_over_sequences(self):
-        #for index, row in self.obs.iterrows():
         self.routine(self.obs.ix[0, 'Semester'], self.obs.ix[0, 'Field'], self.obs.ix[0, 'CCD'])
+
+    def config_results_path(self):
+        results_path = self.dict_settings['results']
+        if not path.exists(results_path):
+            makedirs(results_path)
+        return results_path
 
     def routine(self, semester, field, ccd,  last_mjd=0.0):
 
@@ -50,7 +57,7 @@ class RoutineHandler(object):
         print('Semester: %s | Field: %s | CCD: %s' % (semester, field, ccd))
         print('-----------------------------------------------------------')
 
-        results_path = self.dict_settings['results']
+        results_path = self.config_results_path()
         self.kf.define_params(self.dict_settings['init_var'])
 
         picker = DataPicker(self.route_templates, semester, field, ccd)
@@ -97,7 +104,6 @@ class RoutineHandler(object):
     def get_results(self):
         tpd = TPDetector()
         cands = tpd.look_candidates(self.dict_settings['results'], ccd='N9', field='41')
-        print(cands)
         #tpd.get_plots(coords=cands[4], results_path=self.dict_settings['results'], field=41, ccd='N9')
 
 if __name__ == '__main__':

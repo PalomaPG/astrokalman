@@ -98,6 +98,9 @@ class RoutineHandler(object):
                                       diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
                                       pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
                                       pixel_flags=finder.pixel_flags)
+            print('.........MJD: %f..........' % (picker.mjd[o]))
+            print(data_content.pixel_mid_coords[data_content.group_flags == 0, :])
+            print('...............................')
             science_.close()
 
         print('---------------------------------------------------------------------')

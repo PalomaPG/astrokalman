@@ -38,8 +38,6 @@ class DataContent(object):
         """
         cand_mid_coords = self.pixel_mid_coords[self.group_flags == 0, :]
         out_temp = os.path.join(path_, 'sources_sem_%s_mjd_%.2f_field_%s_ccd_%s' % (semester, mjd, field, ccd))
-        print('PIXEL GROUP FLAGS------')
-        print(self.group_flags.shape)
 
         np.savez(out_temp, pixel_coords=self.pixel_coords, pixel_mid_coords=self.pixel_mid_coords,
                  cand_mid_coords=cand_mid_coords,  science=science, obs_flux= obs_flux, obs_flux_var=obs_flux_var,

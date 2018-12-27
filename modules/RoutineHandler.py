@@ -17,7 +17,7 @@ import sys
 class RoutineHandler(object):
 
     def __init__(self, obs_index_path, route_templates, settings_file, index):
-        self.obs = pd.read_csv(obs_index_path, sep=',', header=0)
+        self.obs = pd.read_csv(obs_index_path, sep=',', header=0, dtype=str)
         self.route_templates = route_templates
         self.settings = settings_file
         self.index = int(index)
@@ -62,7 +62,7 @@ class RoutineHandler(object):
         self.kf.define_params(self.dict_settings['init_var'])
 
         picker = DataPicker(self.route_templates, semester, field, ccd)
-
+        print(picker.files_settings['scienceDir'])
         finder = SourceFinder(flux_thresh=self.dict_settings['flux_thresh'],
                               flux_rate_thresh=self.dict_settings['flux_rate_thresh'],
                               rate_satu=self.dict_settings['rate_satu'], image_size= self.image_size)
@@ -71,7 +71,9 @@ class RoutineHandler(object):
         psf_ = picker.data['psfDir']
         invvar_ = picker.data['invDir']
         aflux_ = picker.data['afluxDir']
-
+        print(picker.data['scienceDir'])
+        print(picker.files_settings['scienceDir'])
+        
         delta_t = picker.mjd[0]-last_mjd
         n_obs = len(picker.mjd)
 

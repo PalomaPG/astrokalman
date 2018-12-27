@@ -8,7 +8,7 @@
 #SBATCH --mail-user=paloma.perez.gar@gmail.com
 #SBATCH --mail-type=ALL
 #SBATCH --exclusive=user
-#SBATCH --array=0-2
+#SBATCH --array=0-92
 
 echo $SLURM_ARRAY_TASK_ID
 echo "SLURM_JOBID="$SLURM_JOBID

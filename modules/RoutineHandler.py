@@ -32,15 +32,17 @@ class RoutineHandler(object):
         self.kf = self.retrieve_kalman_filter(self.dict_settings['filter'])
 
     def retrieve_kalman_filter(self, kalman_string):
-        if kalman_string == 'MCC':
+        if kalman_string == 'mcc':
+            print('MCC')
             return MCKalman(sigma_a=self.dict_settings['sigma_a'], std_factor=self.dict_settings['std_factor'],
                             sigma=self.dict_settings['sigma'], max_iter=int(self.dict_settings['max_iter']),
                             epsilon=float(self.dict_settings['epsilon']),
                             silverman_sigma=int(self.dict_settings['silverman_sigma']), image_size=self.image_size)
-        elif kalman_string=='Basic':
+        elif kalman_string=='basic':
             print('Basic')
             return BasicKalman(sigma_a=self.dict_settings['sigma_a'], image_size=self.image_size)
         else:
+            print('Unscented')
             return UnscentKalman(simple_linear, identity)
 
     def iterate_over_sequences(self):
@@ -62,7 +64,6 @@ class RoutineHandler(object):
         self.kf.define_params(self.dict_settings['init_var'])
 
         picker = DataPicker(self.route_templates, semester, field, ccd)
-        print(picker.files_settings['scienceDir'])
         finder = SourceFinder(flux_thresh=self.dict_settings['flux_thresh'],
                               flux_rate_thresh=self.dict_settings['flux_rate_thresh'],
                               rate_satu=self.dict_settings['rate_satu'], image_size= self.image_size)
@@ -71,9 +72,7 @@ class RoutineHandler(object):
         psf_ = picker.data['psfDir']
         invvar_ = picker.data['invDir']
         aflux_ = picker.data['afluxDir']
-        print(picker.data['scienceDir'])
-        print(picker.files_settings['scienceDir'])
-        
+
         delta_t = picker.mjd[0]-last_mjd
         n_obs = len(picker.mjd)
 
@@ -94,12 +93,19 @@ class RoutineHandler(object):
             finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
                                                flux, var_flux, picker.mjd[o], field, ccd, results_path,
                                                data_content=data_content, o=o)
+            '''
+            data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux=flux,
+                                      obs_flux_var=var_flux, state=self.kf.state, state_cov=self.kf.state_cov,
+                                      diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
+                                      pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
+                                      pixel_flags=finder.pixel_flags)
+            '''
 
-            #data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux=flux,
-            #                          obs_flux_var=var_flux, state=self.kf.state, state_cov=self.kf.state_cov,
-            #                          diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
-            #                          pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
-            #                          pixel_flags=finder.pixel_flags)
+            data_content.save_results(results_path, field, ccd, semester, state=self.kf.state,
+                                      state_cov=self.kf.state_cov, mjd=picker.mjd[o], pred_state=self.kf.pred_state,
+                                      pred_state_cov=self.kf.pred_cov, pixel_flags=finder.pixel_flags)
+
+
             print('.........MJD: %f..........' % (picker.mjd[o]))
             print(data_content.pixel_mid_coords[data_content.group_flags == 0, :])
             print('...............................')

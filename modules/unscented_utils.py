@@ -17,10 +17,10 @@ def sigma_points(mean_, cov_, lambda_,  N=2):
     """
     L, U = cholesky((N+lambda_)*cov_)
     X_0 = mean_
-    X_1 = mean_ + L[[0, 1], :]
-    X_2 = mean_ + L[[1, 2], :]
-    X_3 = mean_ - L[[0, 1], :]
-    X_4 = mean_ - L[[1, 2], :]
+    X_1 = mean_ + L[[0, 1]]
+    X_2 = mean_ + L[[1, 2]]
+    X_3 = mean_ - L[[0, 1]]
+    X_4 = mean_ - L[[1, 2]]
 
     return list([X_0, X_1, X_2, X_3, X_4])
 
@@ -31,8 +31,10 @@ def unscent_weights(kappa=0, alpha=10**(-3), beta=2.0, N=2):
     W_m[0] = lambda_ / (N + lambda_)
     W_m[1:] = 1/(2*(N + lambda_))
     W_c = np.zeros(2*N+1)
-    W_c[0] = W_m[0] + (1 - alpha**2 + beta)
+    W_c[0] = W_m[0] + 1 - alpha**2 + beta
     W_c[1:] = 1/(2*(N + lambda_))
+    print(W_m)
+    print(W_c)
     return W_m, W_c
 
 def perform(func, *args):
@@ -112,7 +114,7 @@ def simple_linear(X, args):
     return np.array([flux, rate_flux])
 
 
-def identity(X):
+def identity(X, args):
     return X
 ##### MAIN ############
 

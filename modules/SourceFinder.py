@@ -176,8 +176,7 @@ class SourceFinder(object):
 
 
     def draw_complying_pixel_groups(self, science, state, state_cov, base_mask,
-                                    dil_mask, flux, var_flux,
-                                     mjd, field, ccd, path_, data_content, o, last=False):
+                                    dil_mask, flux, var_flux, mjd, field, ccd, path_, data_content, o, last=False):
 
 
         self.accum_neg_flux[o % self.accum_neg_flux_depth, :] = flux < 0
@@ -190,8 +189,4 @@ class SourceFinder(object):
         #if self.any_pixels:
         self.filter_groups(science, flux, var_flux, state, base_mask, data_content)
 
-        #if not last:
-            #data_content.save_results(path_, field, ccd, mjd)
-        #else:
-        #    data_content.save_results(path_, field, ccd, mjd, state=state,
-        #                                   state_cov=state_cov, save_state_info=True)
+

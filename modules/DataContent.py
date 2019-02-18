@@ -1,5 +1,7 @@
 import numpy as np
 import os
+from scipy.spatial import distance as dist
+
 class DataContent(object):
 
     def __init__(self):
@@ -29,18 +31,40 @@ class DataContent(object):
 
         return n_pixel_groups
 
-    def save_results(self, path_, field, ccd, semester,  science, obs_flux, obs_flux_var, state, state_cov, pred_state,
-                     pred_state_cov, diff, psf, mask, dil_mask, mjd, pixel_flags):
+    def save_results(self, path_, field, ccd, semester, state, state_cov, pred_state,
+                     pred_state_cov, mjd, pixel_flags):
         """
 
         :param path_:
         :return:
         """
         cand_mid_coords = self.pixel_mid_coords[self.group_flags == 0, :]
-        out_temp = os.path.join(path_, 'sources_sem_%s_mjd_%.2f_field_%s_ccd_%s' % (semester, mjd, field, ccd))
+        output = os.path.join(path_, 'sources_sem_%s_mjd_%.2f_field_%s_ccd_%s' % (semester, mjd, field, ccd))
 
-        np.savez(out_temp, pixel_coords=self.pixel_coords, pixel_mid_coords=self.pixel_mid_coords,
-                 cand_mid_coords=cand_mid_coords,  science=science, obs_flux= obs_flux, obs_flux_var=obs_flux_var,
-                 state=state, state_cov=state_cov, diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=mjd,
+        print(len(cand_mid_coords))
+        cand_mid_coords = self.filter_cand_mid_coords(cand_mid_coords)
+        print(len(cand_mid_coords))
+
+
+        np.savez(output, pixel_coords=self.pixel_coords, pixel_mid_coords=self.pixel_mid_coords,
+                 cand_mid_coords=cand_mid_coords,
+                 state=state, state_cov=state_cov, mjd=mjd,
                  pred_state=pred_state, pred_state_cov = pred_state_cov, pixel_group_flags = self.group_flags_map,
                  pixel_flags=pixel_flags)
+
+
+    def filter_cand_mid_coords(self, coords):
+
+        aux_coords = []
+        for c in coords:
+            if len(aux_coords) == 0:
+                aux_coords.append(c)
+            else:
+                isin = False
+                for a_c in aux_coords:
+                    if dist.euclidean(a_c, c) <= 4:
+                        isin = True
+                if not isin:
+                    aux_coords.append(c)
+
+        return aux_coords

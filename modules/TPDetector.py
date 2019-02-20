@@ -50,19 +50,13 @@ class TPDetector(object):
                     self.cand_info[idx]= {'mjd' : list([mjd]), 'coords' : coords, 'mjd_id' : i_mjd}
             idx = idx +1
 
-    def get_plots(self, coords, results_path, field, ccd, semester='15A', plot_type='stamps'):
+    def get_plots(self, results_path, field, ccd, semester='15A', plot_type='stamps'):
 
         vis = Visualizer(results_path=results_path, plots_path='/home/paloma/Documents/Memoria/results/')
         regex_path = ('%ssources_sem_' % results_path) + ('%s_mjd_' % semester)+\
                      ('[0-9]'*5)+'.'+ ('[0-9]' * 2)+\
                      ('_field_%s_ccd_%s.npz' % (field, ccd))
         results_list = sorted(glob.glob(regex_path))
-
-        #vis.set_plot_obs_flux(results_list, coords)
-        #vis.set_plot_filter_stim(results_list, coords)
-        #vis.set_plot_group_flags(results_list, coords)
-        #vis.plot_lc_obs_flux(coords)
-        #vis.print_stamps(coords)
-        #vis.print_space_states(coords)
+        vis.set_plot_states(results_list, self.cand_info)
 
 

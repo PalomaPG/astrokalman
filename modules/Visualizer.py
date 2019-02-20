@@ -1,4 +1,7 @@
+from modules.utils import *
 import numpy as np
+from astropy.io import fits
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -16,32 +19,89 @@ class Visualizer:
         self.obs_rad = obs_rad
         self.obs_diam = self.obs_rad * 2 + 1
 
-        #Plot configuration
-        self.mjd = []
-        self.science = []
-        self.obs_flux =[]
-        self.obs_flux_var = []
-        self.state = []
-        self.state_cov =[]
-        self.diff = []
-        self.psf = []
-        self.pred_state = []
-        self.pred_state_cov = []
-        self.pixel_flags = []
-        self.pixel_group_flags = []
-
 
     def set_rectangle(self, coords):
 
-        a, b = coords[0] - self.obs_rad, coords[0] + self.obs_rad + 1
-        c, d = coords[1] - self.obs_rad, coords[1] + self.obs_rad + 1
+        a, b = coords[0] - self.obs_rad -1, coords[0] + self.obs_rad + 1
+        c, d = coords[1] - self.obs_rad -1, coords[1] + self.obs_rad + 1
 
         a = int(a)
         b = int(b)
         c = int(c)
         d = int(d)
 
-        return a,b,c,d
+        return a, b, c, d
+
+    def set_plot_states(self, npz_list, sources_dict):
+        sources_coords = []
+        mjd_idxs = []
+        print(sources_dict)
+        for k,v in sources_dict.items():
+            sources_coords.append(sources_dict[k]['coords'])
+            mjd_idxs.append(sources_dict[k]['mjd_id'])
+        n_obs = len(npz_list)
+
+        for i in range(len(mjd_idxs)):
+            obs_flux = []
+            obs_flux_var = []
+            state = []
+            state_cov = []
+            mjds = []
+            a, b, c, d = self.set_rectangle(sources_coords[i])
+
+            if mjd_idxs[i]<=n_obs-3:
+                mjd_interval = range(mjd_idxs[i]-5, mjd_idxs[i]+5)
+            elif mjd_idxs[i]==n_obs-2:
+                mjd_interval = range(mjd_idxs[i]-4, mjd_idxs[i]+2)
+            else:
+                mjd_interval = range(mjd_idxs[i] -5, mjd_idxs[i] + 1)
+
+            for j in mjd_interval:
+                data = np.load(npz_list[j])
+                mjds.append(data['mjd'])
+
+                flux, var_flux, diff, psf = calc_fluxes(str(data['diff_name']), str(data['psf_name']), str(data['invvar_name']),
+                                                        str(data['aflux_name']))
+                obs_flux.append(flux[a:b, c:d])
+                obs_flux_var.append(var_flux[a:b, c:d])
+                state.append(data['state'][:, a:b, c:d])
+                state_cov.append(data['state_cov'][:, a:b, c:d])
+                data.close()
+
+            obs_flux = np.array(obs_flux)
+            obs_flux_var = np.array(obs_flux_var)
+            state = np.array(state)
+            state_cov = np.array(state_cov)
+
+            self.print_space_states(sources_coords[i], state, state_cov, obs_flux, obs_flux_var, pos=[-1, -1],
+                               save_filename='space_curve_source_%d.png' % i)
+
+    def print_space_states(self,  coords, state, state_cov, flux, flux_var, pos=[-1, -1], save_filename='space_curve.png'):
+
+        if pos[0] == -1 and pos[1] == -1:
+            pos[0] = self.obs_rad
+            pos[1] = self.obs_rad
+
+        this_fig = plt.figure(figsize=(self.figsize1, self.figsize2))
+        plt.errorbar(state[:, 0, pos[0], pos[1]], state[:, 1, pos[0], pos[1]], c='b', marker='o',
+                     yerr=state_cov[:, 1, pos[0], pos[1]],
+                     xerr=state_cov[:, 0, pos[0], pos[1]], label='Estimation')
+        plt.errorbar(flux[:, pos[0],pos[1]], np.diff(np.concatenate((np.zeros(1), flux[:, pos[0], pos[1]]))),
+                 c='r', marker='o', xerr=flux_var[:, pos[0], pos[1]], label='Observation', alpha=0.25)
+        plt.grid()
+        #plt.plot([500, 500, 3000], [1000, 150, 0], 'k-', label='Thresholds')
+        plt.legend(loc=0, fontsize='small')
+        #plt.plot([500, 3000], [150, 0], 'k-')
+        plt.xlim(-100, 2000)
+        plt.ylim(-400, 500)
+        plt.title('Position: ' + str(coords[0]) + ',' + str(coords[1]) )
+        plt.xlabel('Flux [ADU]')
+        plt.ylabel('Flux Velocity [ADU/day]')
+
+        plt.savefig(save_filename, bbox_inches='tight')
+        plt.close(this_fig)
+"""
+
 
     def set_plot_obs_flux(self, npz_list, coords): #Plot for lightcurve
         a, b, c, d = self.set_rectangle(coords)
@@ -50,7 +110,7 @@ class Visualizer:
         for npz in npz_list:
             print(i)
             data = np.load(npz)
-            self.obs_flux.append(data['obs_flux'][a:b, c:d])
+            #self.obs_flux.append(data['obs_flux'][a:b, c:d])
             self.mjd.append(data['mjd'])
             self.obs_flux_var.append(data['obs_flux_var'][a:b, c:d])
             self.pixel_flags.append(data['pixel_flags'][a:b, c:d])
@@ -149,15 +209,8 @@ class Visualizer:
         plt.close(this_fig)
 
 
-
     def stack_stamps(self, stamps, max_value=10000):
-        """
 
-        :param stamps:
-        :param self.mjd:
-        :param max_value:
-        :return:
-        """
         stack = stamps[0, :]
         prev_time = self.mjd[0]
         stamps_diam = stamps.shape[1]
@@ -171,12 +224,9 @@ class Visualizer:
         return stack
 
 
+
     def print_stamps(self, coords, filename='test_stamps.png'):
-        """
-        :param save_filename:
-        :param SN_found:
-        :return:
-        """
+
 
         num_graphs = 8
 
@@ -235,33 +285,4 @@ class Visualizer:
 
         plt.savefig(filename, bbox_inches='tight')
         plt.close(this_fig)
-
-    def print_space_states(self,  coords, pos=[-1, -1], save_filename='space_curve.png'):
-
-        if pos[0] == -1 and pos[1] == -1:
-            pos[0] = self.obs_rad
-            pos[1] = self.obs_rad
-
-        this_fig = plt.figure(figsize=(self.figsize1, self.figsize2))
-
-        plt.errorbar(self.state[:, 0, pos[0], pos[1]], self.state[:, 1, pos[0], pos[1]], c='b', marker='o',
-                     yerr=self.state_cov[:, 1, pos[0], pos[1]],
-                     xerr=self.state_cov[:, 0, pos[0], pos[1]], label='Estimation')
-        plt.errorbar(self.obs_flux[:, pos[0],pos[1]], np.diff(np.concatenate((np.zeros(1), self.obs_flux[:, pos[0], pos[1]]))),
-                 c='r', marker='o', xerr=self.obs_flux_var[:, pos[0], pos[1]], label='Observation', alpha=0.25)
-        plt.grid()
-        #plt.plot([500, 500, 3000], [1000, 150, 0], 'k-', label='Thresholds')
-        plt.legend(loc=0, fontsize='small')
-        #plt.plot([500, 3000], [150, 0], 'k-')
-        plt.xlim(-100, 2000)
-        plt.ylim(-400, 500)
-        plt.title('Position: ' + str(coords[0]) + ',' + str(coords[1]) )
-        plt.xlabel('Flux [ADU]')
-        plt.ylabel('Flux Velocity [ADU/day]')
-
-        plt.savefig(save_filename, bbox_inches='tight')
-        plt.close(this_fig)
-
-
-    def plot_candidate(self, ccd, field, semester):
-        pass
+        """

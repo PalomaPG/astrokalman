@@ -33,8 +33,9 @@ def calc_fluxes(diff_, psf_, invvar_, aflux_):
     :param aflux_:
     :return:
     """
+
     diff = fits.open(diff_)
-    diff_data =  diff[0].data
+    diff_data = diff[0].data
     psf = np.load(psf_)
     invvar = fits.open(invvar_)
     invvar[0].data[invvar[0].data == np.inf] = 0.01

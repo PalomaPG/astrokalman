@@ -103,20 +103,17 @@ class RoutineHandler(object):
 
             data_content.save_results(results_path, field, ccd, semester, state=self.kf.state,
                                       state_cov=self.kf.state_cov, mjd=picker.mjd[o], pred_state=self.kf.pred_state,
-                                      pred_state_cov=self.kf.pred_cov, pixel_flags=finder.pixel_flags)
+                                      pred_state_cov=self.kf.pred_cov, pixel_flags=finder.pixel_flags,
+                                      science_name = picker.data['scienceDir'][o], diff_name = diff_[o],
+                                      psf_name = psf_[o], aflux_name = aflux_[o], invvar_name = invvar_[o],
+                                      mask_name=picker.data['maskDir'][0])
 
-
-            print('.........MJD: %f..........' % (picker.mjd[o]))
-            print(data_content.pixel_mid_coords[data_content.group_flags == 0, :])
-            print('...............................')
             science_.close()
-
-        print('---------------------------------------------------------------------')
 
     def get_results(self):
         tpd = TPDetector()
         cands = tpd.look_candidates(self.dict_settings['results'], ccd='N9', field='41')
-        #tpd.get_plots(coords=cands[4], results_path=self.dict_settings['results'], field=41, ccd='N9')
+        tpd.get_plots(results_path=self.dict_settings['results'], field=41, ccd='N9')
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])

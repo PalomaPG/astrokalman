@@ -32,7 +32,8 @@ class DataContent(object):
         return n_pixel_groups
 
     def save_results(self, path_, field, ccd, semester, state, state_cov, pred_state,
-                     pred_state_cov, mjd, pixel_flags):
+                     pred_state_cov, mjd, pixel_flags,  science_name, diff_name, psf_name, aflux_name,
+                     mask_name, invvar_name):
         """
 
         :param path_:
@@ -41,16 +42,14 @@ class DataContent(object):
         cand_mid_coords = self.pixel_mid_coords[self.group_flags == 0, :]
         output = os.path.join(path_, 'sources_sem_%s_mjd_%.2f_field_%s_ccd_%s' % (semester, mjd, field, ccd))
 
-        print(len(cand_mid_coords))
         cand_mid_coords = self.filter_cand_mid_coords(cand_mid_coords)
-        print(len(cand_mid_coords))
-
 
         np.savez(output, pixel_coords=self.pixel_coords, pixel_mid_coords=self.pixel_mid_coords,
                  cand_mid_coords=cand_mid_coords,
                  state=state, state_cov=state_cov, mjd=mjd,
                  pred_state=pred_state, pred_state_cov = pred_state_cov, pixel_group_flags = self.group_flags_map,
-                 pixel_flags=pixel_flags)
+                 pixel_flags=pixel_flags, science_name = science_name, diff_name = diff_name, psf_name = psf_name,
+                 aflux_name = aflux_name, invvar_name = invvar_name, mask_name=mask_name)
 
 
     def filter_cand_mid_coords(self, coords):

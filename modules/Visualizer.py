@@ -1,10 +1,10 @@
-from modules.utils import *
-import numpy as np
-from astropy.io import fits
-
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+
+from modules.utils import *
+import numpy as np
+from scipy.spatial import ConvexHull
 
 
 class Visualizer:
@@ -18,7 +18,6 @@ class Visualizer:
         self.figsize2 = figsize2
         self.obs_rad = obs_rad
         self.obs_diam = self.obs_rad * 2 + 1
-
 
     def set_rectangle(self, coords):
 
@@ -50,16 +49,15 @@ class Visualizer:
             a, b, c, d = self.set_rectangle(sources_coords[i])
 
             if mjd_idxs[i]<=n_obs-3:
-                mjd_interval = range(mjd_idxs[i]-5, mjd_idxs[i]+5)
+                mjd_interval = range(mjd_idxs[i]-3, mjd_idxs[i]+3)
             elif mjd_idxs[i]==n_obs-2:
                 mjd_interval = range(mjd_idxs[i]-4, mjd_idxs[i]+2)
             else:
-                mjd_interval = range(mjd_idxs[i] -5, mjd_idxs[i] + 1)
+                mjd_interval = range(mjd_idxs[i]-5, mjd_idxs[i] + 1)
 
             for j in mjd_interval:
                 data = np.load(npz_list[j])
                 mjds.append(data['mjd'])
-
                 flux, var_flux, diff, psf = calc_fluxes(str(data['diff_name']), str(data['psf_name']), str(data['invvar_name']),
                                                         str(data['aflux_name']))
                 obs_flux.append(flux[a:b, c:d])
@@ -86,20 +84,59 @@ class Visualizer:
         plt.errorbar(state[:, 0, pos[0], pos[1]], state[:, 1, pos[0], pos[1]], c='b', marker='o',
                      yerr=state_cov[:, 1, pos[0], pos[1]],
                      xerr=state_cov[:, 0, pos[0], pos[1]], label='Estimation')
-        plt.errorbar(flux[:, pos[0],pos[1]], np.diff(np.concatenate((np.zeros(1), flux[:, pos[0], pos[1]]))),
-                 c='r', marker='o', xerr=flux_var[:, pos[0], pos[1]], label='Observation', alpha=0.25)
+        #plt.errorbar(flux[:, pos[0],pos[1]], np.diff(np.concatenate((np.zeros(1), flux[:, pos[0], pos[1]]))),
+        #         c='k', marker='o', xerr=flux_var[:, pos[0], pos[1]], label='Observation', alpha=0.25)
+        points = np.column_stack((state[:, 0, pos[0], pos[1]], state[:, 1, pos[0], pos[1]]))
+        entropy_val = self.entropy_value(points)
+        #plt.text(1250, 300, 'Estimated curve entropy: %.2f' % entropy_val, fontsize=10,
+        #         bbox={'facecolor':'blue', 'alpha':0.5, 'pad':10})
+
+        x_min, x_max, y_min, y_max = self.limits(state, pos, x_margin=100, y_margin=50)
+
+        plt.vlines(x=200, ymin=y_min, ymax=50, color='red', zorder=2)
+        plt.vlines(x=200, ymin=50, ymax=y_max, color='red', linestyles='dashed',zorder=2)
+        plt.hlines(y=50, xmin=x_min, xmax=200, color='red', zorder=2)
+        plt.hlines(y=50, xmin=200, xmax=x_max, color='red', linestyles='dashed', zorder=2)
+
         plt.grid()
-        #plt.plot([500, 500, 3000], [1000, 150, 0], 'k-', label='Thresholds')
         plt.legend(loc=0, fontsize='small')
-        #plt.plot([500, 3000], [150, 0], 'k-')
-        plt.xlim(-100, 2000)
-        plt.ylim(-400, 500)
+
+        plt.xlim(x_min, x_max)
+        plt.ylim(y_min, y_max)
         plt.title('Position: ' + str(coords[0]) + ',' + str(coords[1]) )
         plt.xlabel('Flux [ADU]')
         plt.ylabel('Flux Velocity [ADU/day]')
 
+        plt.text(x_max*0.75, y_max*0.75, 'Estimated curve entropy: %.2f' % entropy_val, fontsize=10,
+                 bbox={'facecolor':'white', 'pad':10})
+
         plt.savefig(save_filename, bbox_inches='tight')
         plt.close(this_fig)
+
+    def curve_lenght(self, points):
+        d = 0
+        for i in range(len(points)-1):
+            d = np.linalg.norm(points[i+1] - points[i]) + d
+        return d
+
+    def entropy_value(self, points):
+        hull = ConvexHull(points)
+        d_hull = self.curve_lenght(points[hull.vertices])
+        d_curve = self.curve_lenght(points)
+        entropy_val = np.log2((d_curve * 2.0) / d_hull)
+        return entropy_val
+
+    def limits(self, state,  pos, x_margin, y_margin):
+        x_min = min(state[:, 0, pos[0], pos[1]])
+        x_max = max(state[:, 0, pos[0], pos[1]])
+
+        y_min = min(state[:, 1, pos[0], pos[1]])
+        y_max = max(state[:, 1, pos[0], pos[1]])
+
+        return x_min-x_margin, x_max+x_margin, y_min-y_margin, y_max+y_margin
+
+
+
 """
 
 

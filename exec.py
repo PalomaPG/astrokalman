@@ -7,7 +7,5 @@ if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
     rh.process_settings()
     #rh.iterate_over_sequences()
-    rh.get_results()
-    #print('Holiiii')
-
+    rh.get_results(sys.argv[4])
 

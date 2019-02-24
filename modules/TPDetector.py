@@ -6,7 +6,7 @@ from modules.Visualizer import Visualizer
 
 class TPDetector(object):
 
-    def __init__(self,x_margin=70, y_margin=70):
+    def __init__(self,x_margin=55, y_margin=55):
         #self.visualizer = Visualizer()
         self.cand_coords = []
         self.cand_info = {}
@@ -23,7 +23,9 @@ class TPDetector(object):
         results_list = sorted(glob.glob(regex_path))
         i_mjd = 1
         for result in results_list:
-            mjd = float(result.split('_')[6])
+            mjd = float(result.split('_')[4])
+            print(result)
+            print(mjd)
             data=np.load(result)
             self.list_candidates(data['cand_mid_coords'], mjd, i_mjd)
             i_mjd = i_mjd+1
@@ -36,8 +38,9 @@ class TPDetector(object):
         idx = 1
         for coords in cand_mid_coords:
             if len(self.cand_coords) == 0:
+                print(mjd)
                 self.cand_coords.append(coords)
-                self.cand_info[idx] = {'mjd' : list([mjd]), 'coords' : coords, 'mjd_id' : i_mjd}
+                self.cand_info[idx] = {'mjd' : mjd, 'coords' : coords, 'mjd_id' : i_mjd}
 
             else:
                 new_candidate=True
@@ -47,7 +50,7 @@ class TPDetector(object):
                         break
                 if new_candidate and coords[0]>self.y_margin and coords[1] >self.x_margin:
                     self.cand_coords.append(coords)
-                    self.cand_info[idx]= {'mjd' : list([mjd]), 'coords' : coords, 'mjd_id' : i_mjd}
+                    self.cand_info[idx]= {'mjd' : mjd, 'coords' : coords, 'mjd_id' : i_mjd}
             idx = idx +1
 
     def get_plots(self, results_path, field, ccd, semester='15A', plot_type='stamps'):

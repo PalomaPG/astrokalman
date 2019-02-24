@@ -110,10 +110,10 @@ class RoutineHandler(object):
 
             science_.close()
 
-    def get_results(self):
+    def get_results(self, index):
         tpd = TPDetector()
-        cands = tpd.look_candidates(self.dict_settings['results'], ccd='N9', field='41')
-        tpd.get_plots(results_path=self.dict_settings['results'], field=41, ccd='N9')
+        cands = tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
+        tpd.get_plots(results_path=self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])

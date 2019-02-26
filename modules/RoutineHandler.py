@@ -113,6 +113,7 @@ class RoutineHandler(object):
     def get_results(self, index):
         tpd = TPDetector()
         cands = tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
+        print('Number of candidates found... %d\n' % len(cands))
         tpd.get_plots(results_path=self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
 
 if __name__ == '__main__':

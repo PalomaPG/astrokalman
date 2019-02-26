@@ -22,25 +22,24 @@ class TPDetector(object):
                      ('_field_%s_ccd_%s.npz' % (field, ccd))
         results_list = sorted(glob.glob(regex_path))
         i_mjd = 1
+        self.idx = 1
         for result in results_list:
             mjd = float(result.split('_')[4])
-            print(result)
-            print(mjd)
             data=np.load(result)
             self.list_candidates(data['cand_mid_coords'], mjd, i_mjd)
             i_mjd = i_mjd+1
             self.n_obs = self.n_obs + 1
             data.close()
-        print(self.cand_info)
+
         return self.cand_coords
 
     def list_candidates(self,cand_mid_coords, mjd, i_mjd):
-        idx = 1
+
         for coords in cand_mid_coords:
             if len(self.cand_coords) == 0:
-                print(mjd)
                 self.cand_coords.append(coords)
-                self.cand_info[idx] = {'mjd' : mjd, 'coords' : coords, 'mjd_id' : i_mjd}
+                self.cand_info[self.idx] = {'mjd' : mjd, 'coords' : coords, 'mjd_id' : i_mjd}
+                self.idx = self.idx + 1
 
             else:
                 new_candidate=True
@@ -50,8 +49,8 @@ class TPDetector(object):
                         break
                 if new_candidate and coords[0]>self.y_margin and coords[1] >self.x_margin:
                     self.cand_coords.append(coords)
-                    self.cand_info[idx]= {'mjd' : mjd, 'coords' : coords, 'mjd_id' : i_mjd}
-            idx = idx +1
+                    self.cand_info[self.idx]= {'mjd' : mjd, 'coords' : coords, 'mjd_id' : i_mjd}
+                    self.idx = self.idx + 1
 
     def get_plots(self, results_path, field, ccd, semester='15A', plot_type='stamps'):
 

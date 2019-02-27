@@ -53,7 +53,8 @@ class Visualizer:
             elif mjd_idxs[i]==n_obs-2:
                 mjd_interval = range(mjd_idxs[i]-4, mjd_idxs[i]+2)
             else:
-                mjd_interval = range(mjd_idxs[i]-5, mjd_idxs[i] + 1)
+                mjd_interval = range(mjd_idxs[i]-5, n_obs)
+
 
             for j in mjd_interval:
                 data = np.load(npz_list[j])

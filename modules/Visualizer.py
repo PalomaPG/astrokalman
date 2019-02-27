@@ -34,7 +34,7 @@ class Visualizer:
     def set_plot_states(self, npz_list, sources_dict):
         sources_coords = []
         mjd_idxs = []
-        print(sources_dict)
+        #print(sources_dict)
         for k,v in sources_dict.items():
             sources_coords.append(sources_dict[k]['coords'])
             mjd_idxs.append(sources_dict[k]['mjd_id'])
@@ -71,10 +71,10 @@ class Visualizer:
             state = np.array(state)
             state_cov = np.array(state_cov)
 
-            self.print_space_states(sources_coords[i], state, state_cov, obs_flux, obs_flux_var, pos=[-1, -1],
-                               save_filename='space_curve_source_%d.png' % i)
+            self.print_space_states(sources_coords[i], state, state_cov, pos=[-1, -1],
+                                    save_filename='space_curve_source_%d.png' % i)
 
-    def print_space_states(self,  coords, state, state_cov, flux, flux_var, pos=[-1, -1], save_filename='space_curve.png'):
+    def print_space_states(self,  coords, state, state_cov, pos=[-1, -1], save_filename='space_curve.png'):
 
         if pos[0] == -1 and pos[1] == -1:
             pos[0] = self.obs_rad
@@ -110,7 +110,7 @@ class Visualizer:
         plt.text(x_max*0.75, y_max*0.75, 'Estimated curve entropy: %.2f' % entropy_val, fontsize=10,
                  bbox={'facecolor':'white', 'pad':10})
 
-        plt.savefig(save_filename, bbox_inches='tight')
+        plt.savefig(self.plots_path+save_filename, bbox_inches='tight')
         plt.close(this_fig)
 
     def curve_lenght(self, points):

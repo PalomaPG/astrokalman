@@ -16,7 +16,6 @@ class TPDetector(object):
 
     def look_candidates(self, results_path, field, ccd, semester='15A'):
         print('----look candidates-----')
-        print(results_path)
         regex_path = ('%ssources_sem_' % results_path) + ('%s_mjd_' % semester)+\
                      ('[0-9]'*5)+'.'+ ('[0-9]' * 2)+\
                      ('_field_%s_ccd_%s.npz' % (field, ccd))
@@ -52,9 +51,9 @@ class TPDetector(object):
                     self.cand_info[self.idx]= {'mjd' : mjd, 'coords' : coords, 'mjd_id' : i_mjd}
                     self.idx = self.idx + 1
 
-    def get_plots(self, results_path, field, ccd, semester='15A', plot_type='stamps'):
+    def get_plots(self, results_path, plots_path, field, ccd, semester='15A'):
 
-        vis = Visualizer(results_path=results_path, plots_path='/home/paloma/Documents/Memoria/results/')
+        vis = Visualizer(results_path=results_path, plots_path=plots_path)
         regex_path = ('%ssources_sem_' % results_path) + ('%s_mjd_' % semester)+\
                      ('[0-9]'*5)+'.'+ ('[0-9]' * 2)+\
                      ('_field_%s_ccd_%s.npz' % (field, ccd))

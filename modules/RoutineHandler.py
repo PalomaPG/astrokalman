@@ -30,6 +30,7 @@ class RoutineHandler(object):
                 self.dict_settings[key] =  float(val[:-1]) if val[:-1].replace('.', '', 1).isdigit()  else val[:-1]
         self.image_size = (int(self.dict_settings['imgHeight']), int(self.dict_settings['imgWidth']))
         self.kf = self.retrieve_kalman_filter(self.dict_settings['filter'])
+        self.config_path('plots')
 
     def retrieve_kalman_filter(self, kalman_string):
         if kalman_string == 'mcc':
@@ -48,8 +49,8 @@ class RoutineHandler(object):
     def iterate_over_sequences(self):
         self.routine(self.obs.ix[self.index, 'Semester'], self.obs.ix[self.index, 'Field'], self.obs.ix[self.index, 'CCD'])
 
-    def config_results_path(self):
-        results_path = self.dict_settings['results']
+    def config_path(self, output='results'):
+        results_path = self.dict_settings[output]
         if not path.exists(results_path):
             makedirs(results_path, exist_ok=True)
         return results_path
@@ -60,7 +61,8 @@ class RoutineHandler(object):
         print('Semester: %s | Field: %s | CCD: %s' % (semester, field, ccd))
         print('-----------------------------------------------------------')
 
-        results_path = self.config_results_path()
+        results_path = self.config_path()
+
         self.kf.define_params(self.dict_settings['init_var'])
 
         picker = DataPicker(self.route_templates, semester, field, ccd)
@@ -110,11 +112,11 @@ class RoutineHandler(object):
 
             science_.close()
 
-    def get_results(self, index):
+    def get_results(self):
         tpd = TPDetector()
         cands = tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
         print('Number of candidates found... %d\n' % len(cands))
-        tpd.get_plots(results_path=self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
+        tpd.get_plots(results_path=self.dict_settings['results'], plots_path=self.dict_settings['plots'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])

@@ -13,6 +13,6 @@ class UnscentPredict(IPredict):
         self.Wm = Wm
 
     def predict(self, delta_t, state, state_cov, pred_state, pred_cov):
-        Xs = sigma_points(state, state_cov, lambda_=self.lambda_, d=self.d)
+        Xs = sigma_points(state, state_cov, lambda_=self.lambda_, N=self.d)
         pred_state, pred_cov = propagate_func(self.f_func, self.Wm, self.Wc, Xs, delta_t)
         return pred_state, pred_cov, Xs

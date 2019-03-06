@@ -39,7 +39,9 @@ class DataContent(object):
         :param path_:
         :return:
         """
+
         cand_mid_coords = self.pixel_mid_coords[self.group_flags == 0, :]
+
         output = os.path.join(path_, 'sources_sem_%s_mjd_%.2f_field_%s_ccd_%s' % (semester, mjd, field, ccd))
 
         cand_mid_coords = self.filter_cand_mid_coords(cand_mid_coords)
@@ -53,7 +55,6 @@ class DataContent(object):
 
 
     def filter_cand_mid_coords(self, coords):
-
         aux_coords = []
         for c in coords:
             if len(aux_coords) == 0:

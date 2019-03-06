@@ -2,9 +2,9 @@ import numpy as np
 from glob import glob
 import sys
 
-from sif.SNDetector import SNDetector
-from sif.KalmanFilter import KalmanFilter
-from sif.MaximumCorrentropyKalmanFilter import MaximumCorrentropyKalmanFilter
+from SNDetector import SNDetector
+from KalmanFilter import KalmanFilter
+from MaximumCorrentropyKalmanFilter import MaximumCorrentropyKalmanFilter
 
 class RunData(object):
 
@@ -13,7 +13,7 @@ class RunData(object):
                  test_SN=13,
                  filter_type='kalman',
                  n_params=1,
-                 results_dir='/home/paloma/Documents/Memoria/Code/sif2/sif/results'):
+                 results_dir='./results'):
         """
         Guarda parametros de la ejecucion
         :param year: string, sn year (13,14,15)
@@ -28,7 +28,7 @@ class RunData(object):
         self.only_HiTS_SN = only_HiTS_SN
 
         # Asking if i am @leftraru
-        self.at_leftraru = bool(glob('/home/pperez/'))
+        self.at_leftraru = bool(glob('/home/pperez/Thesis/sif2/sif'))
         self.results_dir = results_dir
 
         if only_HiTS_SN:
@@ -49,10 +49,10 @@ class RunData(object):
 
         self.n_params = n_params
         if self.n_params > 0:
-            self.this_par = 0 #int(self.index / n_CCDs)
+            self.this_par = int(self.index / n_CCDs)
             self.index = int(self.index % n_CCDs)
 
-        path_table = '/home/paloma/Documents/Memoria/Code/sif2/sif/'
+        path_table = '/home/pperez/Thesis/sif2/sif/'
 
         self.SN_table = np.loadtxt(path_table+'ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
 
@@ -60,7 +60,7 @@ class RunData(object):
 
         if self.only_HiTS_SN:
             self.SN_index = self.index
-            #print(self.SN_index)
+            print(self.SN_index)
             self.SN_pos = self.SN_table[self.SN_index, [5, 6]].astype(int)
             self.field = self.SN_table[self.SN_index, 3]
             self.ccd = self.SN_table[self.SN_index, 4]
@@ -75,7 +75,7 @@ class RunData(object):
         Setea los parametros segun la variable self.this_par
         :return void:
         """
-        #print(self.this_par)
+        print(self.this_par)
         decomposing_parameter = int(self.this_par)
         self.filter_type = ['kalman', 'MCC'][decomposing_parameter % 2]
 

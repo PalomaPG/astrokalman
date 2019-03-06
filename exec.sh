@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name="candidate_search_basic"
+#SBATCH --job-name="exec_mcc"
 #SBATCH --partition=slims
 #SBATCH -c 4
 #SBATCH --mem-per-cpu=2400
@@ -8,7 +8,7 @@
 #SBATCH --mail-user=paloma.perez.gar@gmail.com
 #SBATCH --mail-type=ALL
 #SBATCH --exclusive=user
-#SBATCH --array=0-92
+#SBATCH --array=34-36
 
 echo $SLURM_ARRAY_TASK_ID
 echo "SLURM_JOBID="$SLURM_JOBID

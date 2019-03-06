@@ -29,10 +29,10 @@ class SNDetector(object):
         self.accum_compliant_pixels = np.zeros(tuple([self.n_consecutive_alerts]) + images_size, dtype=bool)
         #
         self.CandData = []
+
         self.flux_thres = flux_thres
         self.vel_flux_thres = vel_flux_thres
         self.vel_satu = vel_satu
-        self.any_pixels = False
 
     def subsampled_median(self, image, sampling):
         """
@@ -78,22 +78,22 @@ class SNDetector(object):
         #print '----------------------------------------------------'
 
         # Velocidad de flujo estimada mayor a umbral de velocidad de flujo
-        self.pixel_conditions[1, :] = KF.state[1, :] > self.vel_flux_thres * (
-                    self.vel_satu - np.minimum(KF.state[0, :], self.vel_satu)) / self.vel_satu
+        self.pixel_conditions[1, :] = KF.state[1, :] > (self.vel_flux_thres * (
+                    self.vel_satu - np.minimum(KF.state[0, :], self.vel_satu)) / self.vel_satu)
 
         self.pixel_conditions[2, :] = FH.science > epoch_science_median + 5 # umbral estimado para considerar
         #  pixeles + brillantes que el cielo
 
-        # DESCARTE DE PIXELES DEFECTUOSOS
+        # DESCARTE DE PIXELES RUIDOSOS
         self.pixel_conditions[3, :] = KF.state_cov[0, :] < 150.0 # varianza de  flujo
         self.pixel_conditions[4, :] = KF.state_cov[2, :] < 150.0 # varianza de vel. flujo
-        self.pixel_conditions[5, :] = np.logical_not(FH.dil_base_mask) #
+        self.pixel_conditions[5, :] = np.logical_not(FH.dil_base_mask) # descarte defectuosos
         self.pixel_conditions[6, :] = np.logical_not(FH.median_rejection) #
 
         for i in range(self.n_conditions):
             self.pixel_flags[np.logical_not(self.pixel_conditions[i, :])] += 2 ** i
 
-        self.accum_compliant_pixels[o % self.n_consecutive_alerts, :] = self.pixel_flags == 0
+        self.accum_compliant_pixels[o % self.n_consecutive_alerts, :] = (self.pixel_flags == 0)
 
     def neighboring_pixels(self):
         """
@@ -104,16 +104,15 @@ class SNDetector(object):
         self.PGData = {}  # Pixel group data
         self.PGData['pixel_coords'] = []
 
-        self.alert_pixels = np.all(self.accum_compliant_pixels, 0)
+        alert_pixels = np.all(self.accum_compliant_pixels, 0) # 0 -> selected dim
 
-
-        if not np.any(self.alert_pixels):
-        #    self.any_pixels=False
+        if not np.any(alert_pixels):
             self.PGData['mid_coords'] = np.zeros((0, 2), dtype=int)
-            self.LIValues = np.array([])
             return
-        #self.any_pixels=True
-        labeled_image, nr_objects = mh.label(self.pixel_flags==0, Bc=np.ones((3, 3), dtype=int))
+
+        #labeled_image = pm.label(alert_pixels, Bc=np.ones((3, 3), dtype=bool))
+        labeled_image, nr_objects = mh.label(alert_pixels, Bc=np.ones((3, 3), dtype=int))
+        #print(labeled_image[0])
 
         LICoords = np.nonzero(labeled_image)
         LIValues = labeled_image[LICoords]
@@ -121,7 +120,7 @@ class SNDetector(object):
         #print(LICoords)
 
         sortedArgs = np.argsort(LIValues)
-        self.LIValues = LIValues[sortedArgs]
+        LIValues = LIValues[sortedArgs]
         LICoords = LICoords[sortedArgs, :]
 
         n_neighboring_pixels = LIValues[-1]
@@ -129,12 +128,8 @@ class SNDetector(object):
         self.PGData['mid_coords'] = np.zeros((n_neighboring_pixels, 2), dtype=int)
 
         for i in range(n_neighboring_pixels):
-            self.PGData['pixel_coords'] += [LICoords[self.LIValues == i + 1, :]]
+            self.PGData['pixel_coords'] += [LICoords[LIValues == i + 1, :]]
             self.PGData['mid_coords'][i, :] = np.round(np.mean(self.PGData['pixel_coords'][i], 0))
-            #print('-----------SNDetector--------------------')
-            #print(self.PGData['pixel_coords'][i])
-
-        return
 
     def filter_groups(self, FH, KF):
         """
@@ -151,8 +146,8 @@ class SNDetector(object):
         for i in range(n_pixel_groups):
             posY, posX = self.PGData['mid_coords'][i, :]
 
-            # Discard groups with negative flux around (bad substractions)
 
+            # Discard groups with negative flux around (bad substractions)
             NNFR = 4
             a, b = posY - NNFR, posY + NNFR + 1
             c, d = posX - NNFR, posX + NNFR + 1
@@ -163,6 +158,7 @@ class SNDetector(object):
             LMSR = 3
             a, b = posY - LMSR + 1, posY + LMSR + 2
             c, d = posX - LMSR + 1, posX + LMSR + 2
+            #scienceLM = pm.regmax(FH.science[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             scienceLM = mh.regmax(FH.science[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
             if not np.any(scienceLM[1:-1, 1:-1]):
                 self.PGData['group_flags'][i] += 2
@@ -245,7 +241,6 @@ class SNDetector(object):
         :return:
         """
         cand_mid_coords = self.PGData['mid_coords'][self.PGData['group_flags'] == 0, :]
-        print(cand_mid_coords)
 
         for i in range(cand_mid_coords.shape[0]):
 
@@ -260,8 +255,8 @@ class SNDetector(object):
                     # Part of a previous candidate?
                     if (np.sqrt(np.sum((cand_mid_coords[i, :] - self.CandData[c]['coords']) ** 2)) < 4.0):
                         n_epochs = len(self.CandData[c]['epochs'])
-                        self.CandData[c]['coords'] = \
-                            (self.CandData[c]['coords'] * n_epochs + cand_mid_coords[i, :]) / (n_epochs + 1)
+                        self.CandData[c]['coords'] = (self.CandData[c]['coords'] * n_epochs + cand_mid_coords[i, :]) / (
+                                    n_epochs + 1)
                         self.CandData[c]['epochs'] += [o]
                         break
         print('--------------brrrrr')

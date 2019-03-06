@@ -5,7 +5,7 @@ from modules.DataContent import DataContent
 class SourceFinder(object):
 
     def __init__(self, flux_thresh, flux_rate_thresh, rate_satu, accum_neg_flux_depth=4, prev_fluxes = None,
-                 accum_med_flux_depth=3,image_size=(4094, 2046), n_consecutive_obs=4):
+                 accum_med_flux_depth=3,image_size=(4094, 2046), n_consecutive_obs=6):
         """
 
         :param flux_thresh:
@@ -47,8 +47,6 @@ class SourceFinder(object):
         :return:
         """
         n_conditions = 7
-
-
 
         science_median = subsampled_median(science, self.image_size, 20)
         pixel_conditions = np.zeros(tuple([n_conditions]) + self.image_size, dtype=bool) #Every pixel
@@ -124,7 +122,7 @@ class SourceFinder(object):
                 c, d = posX - LMSR + 1, posX + LMSR + 2
                 scienceLM = mh.regmax(science[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
                 if not np.any(scienceLM[1:-1, 1:-1]):
-                    data_content.group_flags[i] += 2#self.PGData['group_flags'][i] += 2
+                    data_content.group_flags[i] += 2 #self.PGData['group_flags'][i] += 2
 
                 # Local Maxima Radius in Flux Image
                 LMSR = 3
@@ -132,7 +130,7 @@ class SourceFinder(object):
                 c, d = posX - LMSR + 1, posX + LMSR + 2
                 fluxLM = mh.regmax(flux[a:b, c:d].astype(int), Bc=np.ones((3, 3), dtype=bool))
                 if not np.any(fluxLM[1:-1, 1:-1]):
-                    data_content.group_flags[i] += 4#self.PGData['group_flags'][i] += 4
+                    data_content.group_flags[i] += 4 #self.PGData['group_flags'][i] += 4
 
                 # Local Maxima Radius in Estimated Flux Velocity Image
                 LMSR = 3
@@ -147,7 +145,7 @@ class SourceFinder(object):
                 a, b = posY - ASMR, posY + ASMR + 1
                 c, d = posX - ASMR, posX + ASMR + 1
                 if not (science[posY, posX] > np.median(science[a:b, c:d]) + 15):
-                    data_content.group_flags[i] += 16#self.PGData['group_flags'][i] += 16
+                    data_content.group_flags[i] += 16 #self.PGData['group_flags'][i] += 16
 
                 # Brightest Pixel on stamps (flux and science)
                 BPOS = 10
@@ -156,7 +154,7 @@ class SourceFinder(object):
                 brightPixels = np.logical_or(flux[a:b, c:d] > 2 * flux[posY, posX],
                                              science[a:b, c:d] > 2 * science[posY, posX])
                 if np.any(brightPixels):
-                    data_content.group_flags[i] += 32#self.PGData['group_flags'][i] += 32
+                    data_content.group_flags[i] += 32 #self.PGData['group_flags'][i] += 32
 
                 # Center over mask
                 if base_mask[posY, posX] > 0:
@@ -176,7 +174,7 @@ class SourceFinder(object):
 
 
     def draw_complying_pixel_groups(self, science, state, state_cov, base_mask,
-                                    dil_mask, flux, var_flux, mjd, field, ccd, path_, data_content, o, last=False):
+                                    dil_mask, flux, var_flux, data_content, o):
 
 
         self.accum_neg_flux[o % self.accum_neg_flux_depth, :] = flux < 0

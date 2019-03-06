@@ -93,15 +93,7 @@ class RoutineHandler(object):
 
             science_ = fits.open(picker.data['scienceDir'][o])
             finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
-                                               flux, var_flux, picker.mjd[o], field, ccd, results_path,
-                                               data_content=data_content, o=o)
-            '''
-            data_content.save_results(results_path, field, ccd, semester, science=science_[0].data, obs_flux=flux,
-                                      obs_flux_var=var_flux, state=self.kf.state, state_cov=self.kf.state_cov,
-                                      diff=diff, psf=psf, mask=mask, dil_mask=dil_mask, mjd=picker.mjd[o],
-                                      pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
-                                      pixel_flags=finder.pixel_flags)
-            '''
+                                               flux, var_flux, data_content=data_content, o=o)
 
             data_content.save_results(results_path, field, ccd, semester, state=self.kf.state,
                                       state_cov=self.kf.state_cov, mjd=picker.mjd[o], pred_state=self.kf.pred_state,
@@ -114,9 +106,8 @@ class RoutineHandler(object):
 
     def get_results(self):
         tpd = TPDetector()
-        cands = tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
-        print('Number of candidates found... %d\n' % len(cands))
-        tpd.get_plots(results_path=self.dict_settings['results'], plots_path=self.dict_settings['plots'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
+        tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
+        #tpd.get_plots(results_path=self.dict_settings['results'], plots_path=self.dict_settings['plots'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])

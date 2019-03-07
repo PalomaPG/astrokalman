@@ -17,7 +17,7 @@ import sys
 class RoutineHandler(object):
 
     def __init__(self, obs_index_path, route_templates, settings_file, index):
-        self.obs = pd.read_csv(obs_index_path, sep=',', header=0, dtype=str)
+        self.obs = (pd.read_csv(obs_index_path, sep=',', header=0, dtype=str, na_values='-')).fillna(-1.0)
         self.route_templates = route_templates
         self.settings = settings_file
         self.index = int(index)
@@ -82,6 +82,8 @@ class RoutineHandler(object):
         mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
 
         for o in range(n_obs):
+            print('         %d. MJD :   %.2f' % (o, picker.mjd[o]))
+            print('------------------------------------- \n')
             data_content = DataContent()
             flux, var_flux, diff, psf = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
 
@@ -93,16 +95,21 @@ class RoutineHandler(object):
 
             science_ = fits.open(picker.data['scienceDir'][o])
             finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
-                                               flux, var_flux, data_content=data_content, o=o)
+                                               flux, var_flux, o=o, SN_index=self.index,
+                                               SN_pos=np.array([float(self.obs['POS_Y']), float(self.obs['POS_X'])],
+                                                               dtype=float))
 
+            '''
             data_content.save_results(results_path, field, ccd, semester, state=self.kf.state,
                                       state_cov=self.kf.state_cov, mjd=picker.mjd[o], pred_state=self.kf.pred_state,
                                       pred_state_cov=self.kf.pred_cov, pixel_flags=finder.pixel_flags,
                                       science_name = picker.data['scienceDir'][o], diff_name = diff_[o],
                                       psf_name = psf_[o], aflux_name = aflux_[o], invvar_name = invvar_[o],
                                       mask_name=picker.data['maskDir'][0])
+            '''
 
             science_.close()
+        print('Number of unidentified objects: ' + str(finder.NUO))
 
     def get_results(self):
         tpd = TPDetector()

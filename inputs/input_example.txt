@@ -1,9 +1,9 @@
 maskDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s
 scienceDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s
 diffDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s
-psfDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s/CALIBRATIONS
+psfDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s/CALIBRATION
 invDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s
-afluxDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s/CALIBRATIONS
+afluxDir = /home/paloma/Documents/Memoria/data/Blind%s_%s/%s/CALIBRATION
 maskRegEx = Blind%s_%s_%s_[0-9][0-9]_dqmask.fits.fz
 scienceRegEx = Blind%s_%s_%s_[0-9][0-9]_image_crblaster_grid02_lanczos2.fits
 diffRegEx = Diff_Blind%s_%s_%s_[0-9][0-9]t*-0[0-9]t*_grid02_lanczos2.fits

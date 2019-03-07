@@ -4,7 +4,7 @@
 
 import numpy as np
 
-from sif.KalmanFilter import KalmanFilter
+from KalmanFilter import KalmanFilter
 
 
 class MaximumCorrentropyKalmanFilter(KalmanFilter):

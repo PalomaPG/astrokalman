@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from sif.RunData import RunData
-from sif.FITSHandler import FITSHandler
-from sif.Observer import Observer
+from RunData import RunData
+from FITSHandler import FITSHandler
+from Observer import Observer
 from resource import getrusage as resource_usage, RUSAGE_SELF
 
-from sif.unix_time import unix_time
+from unix_time import unix_time
 from time import time
 import os
 

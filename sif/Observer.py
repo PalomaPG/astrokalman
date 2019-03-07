@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 # SIF: Stream Images Filtering
+import matplotlib
+matplotlib.use('agg')
 
 import numpy as np
 import matplotlib.pyplot as plt

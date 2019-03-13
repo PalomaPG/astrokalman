@@ -13,4 +13,4 @@ class BasicCorrect(ICorrect):
         state_cov[[0, 1], :] = pred_cov[[0, 1], :] * (1.0 - kalman_gain[0, :])
         state_cov[2, :] = pred_cov[2, :] - kalman_gain[1, :] * pred_cov[1, :]
 
-        return state, state_cov
+        return state, state_cov, kalman_gain

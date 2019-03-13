@@ -1,8 +1,9 @@
 imgHeight=4094
 imgWidth=2046
-filter=mcc
-results=/home/pperez/Thesis/RESULTS/MCC/
-plots=/home/pperez/Thesis/PLOTS/MCC/
+filter=basic
+results=/home/paloma/Documents/RESULTS/BASIC/
+plots=/home/paloma/Documents/PLOTS/BASIC/
+cand_data_npz=/home/paloma/Documents/RESULTS/BASIC/
 init_var=100.0
 flux_thresh=200.0
 flux_rate_thresh=50.0

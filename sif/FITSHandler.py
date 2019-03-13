@@ -71,7 +71,7 @@ class FITSHandler(object):
         else:
 
             baseDir = '/home/paloma/Documents/Memoria/data/Blind15A_'+self.field+'/'+self.ccd+'/' # + str(self.SN_index + 1).zfill(2) + 'SN/'
-            caliDir = baseDir+'CALIBRATIONS/'
+            caliDir = baseDir+'CALIBRATION/'
 
             self.data_names['base_mask'] = glob(baseDir+'Blind15A_'+self.field+'_'+self.ccd+'_*_dqmask.fits.fz')[0]
             self.data_names['science'] = sorted(glob(baseDir+'Blind15A_'+self.field

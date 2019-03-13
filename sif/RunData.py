@@ -52,7 +52,7 @@ class RunData(object):
             self.this_par = int(self.index / n_CCDs)
             self.index = int(self.index % n_CCDs)
 
-        path_table = '/home/pperez/Thesis/sif2/sif/'
+        path_table = './'
 
         self.SN_table = np.loadtxt(path_table+'ResultsTable20' + self.year + '.csv', dtype='str', delimiter=',')
 

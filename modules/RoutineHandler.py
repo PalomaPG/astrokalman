@@ -11,7 +11,8 @@ from modules.DataContent import DataContent
 
 import pandas as pd
 from os import path, makedirs
-#import numpy as np
+import numpy as np
+import os
 import sys
 
 class RoutineHandler(object):
@@ -46,8 +47,9 @@ class RoutineHandler(object):
             print('Unscented')
             return UnscentKalman(simple_linear, identity)
 
-    def iterate_over_sequences(self):
-        self.routine(self.obs.ix[self.index, 'Semester'], self.obs.ix[self.index, 'Field'], self.obs.ix[self.index, 'CCD'])
+    def iterate_over_sequences(self, check_found_objects = False):
+        self.routine(self.obs.ix[self.index, 'Semester'], self.obs.ix[self.index, 'Field'],
+                     self.obs.ix[self.index, 'CCD'], check_found_objects=check_found_objects)
 
     def config_path(self, output='results'):
         results_path = self.dict_settings[output]
@@ -55,7 +57,7 @@ class RoutineHandler(object):
             makedirs(results_path, exist_ok=True)
         return results_path
 
-    def routine(self, semester, field, ccd,  last_mjd=0.0):
+    def routine(self, semester, field, ccd,  check_found_objects = False, last_mjd=0.0):
 
         print('-----------------------------------------------------------')
         print('Semester: %s | Field: %s | CCD: %s' % (semester, field, ccd))
@@ -78,13 +80,21 @@ class RoutineHandler(object):
         delta_t = picker.mjd[0]-last_mjd
         n_obs = len(picker.mjd)
 
+        if check_found_objects:
+            print('NPZ file...')
+            tpd = TPDetector(n_obs)
+            path_npz = ( '%ssources_sem_%s_field_%s_ccd_%s.npz' %
+                         (self.dict_settings['cand_data_npz'], semester, field, ccd))
+            data = np.load(path_npz)
+            tpd.set_space(data['cand_data'])
+
         #Mask bad pixels and the neighbors
         mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
 
         for o in range(n_obs):
+
             print('         %d. MJD :   %.2f' % (o, picker.mjd[o]))
             print('------------------------------------- \n')
-            data_content = DataContent()
             flux, var_flux, diff, psf = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
 
             if o>0:
@@ -95,26 +105,32 @@ class RoutineHandler(object):
 
             science_ = fits.open(picker.data['scienceDir'][o])
             finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
-                                               flux, var_flux, o=o, SN_index=self.index,
-                                               SN_pos=np.array([float(self.obs['POS_Y']), float(self.obs['POS_X'])],
-                                                               dtype=float))
+                                               flux, var_flux, o=o)
 
-            '''
-            data_content.save_results(results_path, field, ccd, semester, state=self.kf.state,
-                                      state_cov=self.kf.state_cov, mjd=picker.mjd[o], pred_state=self.kf.pred_state,
-                                      pred_state_cov=self.kf.pred_cov, pixel_flags=finder.pixel_flags,
-                                      science_name = picker.data['scienceDir'][o], diff_name = diff_[o],
-                                      psf_name = psf_[o], aflux_name = aflux_[o], invvar_name = invvar_[o],
-                                      mask_name=picker.data['maskDir'][0])
-            '''
+            if check_found_objects:
+                tpd.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
+                                   kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
+                                   time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
+                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o)
 
             science_.close()
-        print('Number of unidentified objects: ' + str(finder.NUO))
+
+        if not check_found_objects:
+
+            finder.check_candidates(self.index, SN_pos=np.array([float(self.obs['POS_Y']), float(self.obs['POS_X'])],
+                                                            dtype=float))
+            output = os.path.join(results_path, 'sources_sem_%s_field_%s_ccd_%s' % (semester, field, ccd))
+            np.savez(output, cand_data=finder.CandData)
+            print('Number of unidentified objects: ' + str(finder.NUO))
+        else:
+            print(tpd.obj[0]['MJD'])
+            np.savez(path_npz, objects=tpd.obj)
+
+
 
     def get_results(self):
         tpd = TPDetector()
         tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
-        #tpd.get_plots(results_path=self.dict_settings['results'], plots_path=self.dict_settings['plots'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])

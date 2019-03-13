@@ -29,8 +29,8 @@ class Observer(object):
             self.new_object(new_pos[0], new_pos[1], status=1000)
 
     def new_objects_from_CandData(self, CandData):
-        """
 
+        """
         :param CandData:
         :return:
         """
@@ -74,7 +74,11 @@ class Observer(object):
         :param SND:
         :return:
         """
+
+        print("Before loop")
         for i in range(len(self.obj)):
+
+            print("Inside loop")
             a, b = self.obj[i]['posY'] - self.obs_rad, self.obj[i]['posY'] + self.obs_rad + 1
             c, d = self.obj[i]['posX'] - self.obs_rad, self.obj[i]['posX'] + self.obs_rad + 1
             a = int(a)

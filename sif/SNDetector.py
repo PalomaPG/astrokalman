@@ -259,9 +259,7 @@ class SNDetector(object):
                                     n_epochs + 1)
                         self.CandData[c]['epochs'] += [o]
                         break
-        print('--------------brrrrr')
-        print(len(self.CandData))
-        print('--------------')
+        print(self.CandData)
 
     def check_candidates(self, RD):
         """

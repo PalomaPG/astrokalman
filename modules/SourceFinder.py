@@ -237,8 +237,10 @@ class SourceFinder(object):
 
 
 
+
+
     def draw_complying_pixel_groups(self, science, state, state_cov, base_mask,
-                                    dil_mask, flux, var_flux, o, SN_index, SN_pos):
+                                    dil_mask, flux, var_flux, o):
 
         self.accum_neg_flux[o % self.accum_neg_flux_depth, :] = flux < 0
         self.median_rejection, self.accum_median_flux = median_rejection_calc(self.median_rejection,
@@ -250,6 +252,3 @@ class SourceFinder(object):
         #if self.any_pixels:
         self.filter_groups(science, flux, var_flux, state, base_mask)
         self.update_candidates(o)
-        self.check_candidates(SN_index, SN_pos)
-
-

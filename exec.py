@@ -8,5 +8,4 @@ if __name__ == '__main__':
     rh.process_settings()
     #rh.iterate_over_sequences()
     rh.iterate_over_sequences(check_found_objects=True)
-    #rh.get_results()
-
+    #rh.plot_results()

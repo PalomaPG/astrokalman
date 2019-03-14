@@ -6,8 +6,7 @@ from modules.SourceFinder import SourceFinder
 from modules.utils import *
 from modules.unscented_utils import identity, simple_linear
 from modules.TPDetector import TPDetector
-from modules.DataContent import DataContent
-#from resource import getrusage as resource_usage, RUSAGE_SELF
+
 
 import pandas as pd
 from os import path, makedirs
@@ -87,7 +86,6 @@ class RoutineHandler(object):
                          (self.dict_settings['cand_data_npz'], semester, field, ccd))
             data = np.load(path_npz)
             tpd.set_space(data['cand_data'])
-
         #Mask bad pixels and the neighbors
         mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
 
@@ -111,7 +109,9 @@ class RoutineHandler(object):
                 tpd.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
                                    kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
                                    time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
-                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o)
+                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o,
+                                   group_flags_map=finder.PGData['group_flags_map'],
+                                   pixel_flags=finder.pixel_flags)
 
             science_.close()
 
@@ -124,18 +124,28 @@ class RoutineHandler(object):
             print('Number of unidentified objects: ' + str(finder.NUO))
         else:
             print(tpd.obj[0]['MJD'])
-            np.savez(path_npz, objects=tpd.obj)
+            plot_path = self.config_path(output='plots')
+            tpd.plot_results(tpd.obj, semester=semester, ccd=ccd, field=field, plot_path=plot_path)
+            #np.savez(path_npz, objects=tpd.obj)
+
+    def plot_results(self):
+
+        semester = self.obs.ix[self.index, 'Semester']
+        field = self.obs.ix[self.index, 'Field']
+        ccd = self.obs.ix[self.index, 'CCD']
+        picker = DataPicker(self.route_templates, semester, field, ccd)
+
+        tpd = TPDetector(picker.mjd)
+        path_npz = ('%ssources_sem_%s_field_%s_ccd_%s.npz' %
+                    (self.dict_settings['cand_data_npz'], semester, field, ccd))
+        data = np.load(path_npz)
 
 
+        #tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
 
-    def get_results(self):
-        tpd = TPDetector()
-        tpd.look_candidates(self.dict_settings['results'], ccd=self.obs.ix[self.index, 'CCD'], field=self.obs.ix[self.index, 'Field'])
 
 if __name__ == '__main__':
     rh = RoutineHandler(sys.argv[1], sys.argv[2], sys.argv[3])
     rh.process_settings()
     rh.iterate_over_sequences()
     rh.routine('15A', '34', 'N3')
-    #tpd = TPDetector()
-    #tpd.look_candidates(results_path, ccd='N27', field='22')

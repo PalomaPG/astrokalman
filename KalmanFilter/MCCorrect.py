@@ -12,7 +12,7 @@ class MCCorrect(ICorrect):
         self.std_factor = std_factor
         self.sigma = sigma
 
-    def correct(self, z, R, pred_state, pred_cov, state, state_cov):
+    def correct(self, z, R, pred_state, pred_cov, state, state_cov, delta_t):
         chol_p, inv_chol_p = cholesky(pred_cov)
         prev_iter_state = pred_state.copy()
         j = 1

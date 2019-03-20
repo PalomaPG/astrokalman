@@ -33,26 +33,25 @@ def unscent_weights(kappa=0, alpha=10**(-3), beta=2.0, N=2):
     W_c = np.zeros(2*N+1)
     W_c[0] = W_m[0] + 1 - alpha**2 + beta
     W_c[1:] = 1/(2*(N + lambda_))
-    print(W_m)
-    print(W_c)
     return W_m, W_c
 
 def perform(func, *args):
     return func(*args)
 
 
-def propagate_func(func, W_m, W_c,  Xs, *args, D=2 ):
+def propagate_func_pred(func, W_m, W_c,  Xs, u, Q, delta_t, args, D=2, image_size=(4094, 2046)):
     #Assesses Ys values
+
     l = int(2*D + 1)
     Ys = []
     for i in range(l):
-        Ys.append(perform(func, Xs[i], args))
+        Ys.append(perform(func, Xs[i], [delta_t] + args))
 
-    y_mean =  np.zeros((2, 4094, 2046))
+    y_mean =  np.zeros((tuple([2]) + image_size))
     for i in range(l):
         y_mean += W_m[i] * Ys[i]
 
-    y_cov = np.zeros((3, 4094, 2046))
+    y_cov = np.zeros(tuple([3]) + image_size)
     for i in range(l):
         y_diff_0 = (Ys[i][0] - y_mean[0])
         y_diff_2 = (Ys[i][1] - y_mean[1])
@@ -60,50 +59,106 @@ def propagate_func(func, W_m, W_c,  Xs, *args, D=2 ):
         y_cov[2] += W_c[i] * np.power(y_diff_2, 2)
         y_cov[1] += W_c[i] * (y_diff_0*y_diff_2)
 
-    return y_mean, y_cov
+    return y_mean+u, y_cov+Q
 
 
+def propagate_func_corr(func, W_m, W_c, Xs, delta_t, args, D=2, image_size=(4094, 2046), mean=True):
 
-def multiple_dot_products(m1_lst, m2_lst, w_c, image_size):
-    product = np.zeros(shape=tuple([3]) + image_size)
-    l = len(m1_lst)
+    l = int(2*D + 1)
+
+    Ys = []
     for i in range(l):
-        product[0] = w_c[i]*m1_lst[i][0, :]*m2_lst[i][0, :]+product[0]
-        product[1] = w_c[i]*m1_lst[i][0, :]*m2_lst[i][1, :]+product[1]
-        product[2] = w_c[i]*m1_lst[i][1, :]*m2_lst[i][1, :]+product[2]
+        Ys.append(perform(func, Xs[i], [delta_t] + args))
 
-    return product
+    y_mean = np.zeros((tuple([2]) + image_size))
 
+    for i in range(l):
+        y_mean += W_m[i] * Ys[i]
 
-def matrix_inverse(mat):
-    new_mat = np.zeros(shape=mat.shape)
-    factor = mat[0] * mat[2] - mat[1] * mat[1]
-    new_mat[0] = mat[2]/factor
-    new_mat[1] = -mat[1]/factor
-    new_mat[2] = mat[0]/factor
-    return new_mat
+    if not mean:
+        y_cov = np.zeros(tuple([3]) + image_size)
 
+        for i in range(l):
+            y_diff_0 = (Ys[i][0] - y_mean[0])
+            y_diff_2 = (Ys[i][1] - y_mean[1])
+            y_cov[0] += W_c[i] * np.power(y_diff_0, 2)
+            y_cov[2] += W_c[i] * np.power(y_diff_2, 2)
+            y_cov[1] += W_c[i] * (y_diff_0 * y_diff_2)
+        return  y_cov
 
-def matrices_dot_product(m1, m2):
-
-    product = np.zeros(shape=m1.shape)
-    product[0] = m1[0]*m2[0] + m1[1]*m2[1]
-    product[1] = m1[0]*m2[1] + m1[1]*m2[2]
-    product[2] = m1[1]*m2[1] + m1[2]*m2[2]
-    return product
+    return y_mean
 
 
-def matrix_vector_dot_product(m, v):
-    product = np.zeros(shape=v.shape)
-    product[0] = m[0]*v[0] + m[1]*v[1]
-    product[1] = m[1]*v[0] + m[2]*v[1]
-    return product
+#State - measurement
+def cross_covariance(f_func, h_func, W_c, Xs, Ys, delta_t, f_args, h_args, pred_state, pred_z,
+                     D=2, image_size=(4094, 2046)):
+    l = int(2*D + 1)
+
+    CCM = np.zeros(tuple([4]) + image_size)
+
+    for i in range(l):
+        F = (perform(f_func, Xs[i], [delta_t] + f_args)-pred_state)
+        H = (perform(h_func, Ys[i], [delta_t] + h_args)-pred_z)
+        CCM[0] += W_c[i]*F[0] * H[0]
+        CCM[3] += W_c[i]*F[1] * H[1]
+        CCM[1] += W_c[i]*F[0] * H[1]
+        CCM[2] += W_c[i]*F[1] * H[0]
+
+    return CCM
+
+#Optimal gain
+def optimal_gain(C, S, image_size=(4094, 2046)):
+
+    K = np.zeros(tuple([4])+image_size)
+    print(K.shape)
+
+    alpha = (S[0]*S[2] - S[1]*S[1])**(-1)
+    K[0] = alpha*(C[0]*S[2]-C[1]*S[1])
+    K[1] = alpha*(-C[0]*S[1]-C[1]*S[0])
+    K[2] = alpha*(-C[2]*S[2]+C[3]*S[1])
+    K[3] = alpha*(-C[2]*S[1]+C[3]*S[0])
+
+    return K
+
+
+def get_KSKt_product(K,S, image_size):
+
+    KS = np.zeros(tuple([4])+image_size)
+    KS[0] = K[0]*S[0] + K[1]*S[1]
+    KS[1] = K[0]*S[1] + K[1]*S[2]
+    KS[2] = K[2]*S[0] + K[3]*S[1]
+    KS[3] = K[2]*S[1] + K[3]*S[2]
+
+    KSKt = np.zeros(tuple([3])+image_size)
+    KSKt[0] = KS[0]*K[0] + KS[1]*K[1]
+    KSKt[1] = KS[0]*K[2] + KS[1]*K[3]
+    KSKt[2] = KS[2]*K[2] + KS[3]*K[3]
+
+    return KSKt
+
+
+def get_uQ(args, image_size):
+    if len(args) <= 1 :
+        return np.zeros(shape=(tuple([2])+image_size)), np.zeros(shape=(tuple([3])+image_size))
+    else :
+        delta_t = args[0]
+        index = args[1]
+        b = args[2]
+        u = np.zeros(shape=(tuple([2])+image_size))
+        u[0] = b*delta_t**index
+        u[1] = b*(index)*delta_t**(index-1)
+
+        Q = np.zeros(shape=(tuple([3]) +image_size))
+        Q[0, :] = delta_t ** (2 * index)
+        Q[1, :] = b * delta_t ** (2 * b - 1)
+        Q[2, :] = (b ** 2) * (delta_t ** (2 * (b - 1)))
+        print(np.nanmin(Q[0]))
+        return u, Q
 
 
 
 
-
-######## LINEAR FUNCTIONS #########
+######## FUNCTIONS #########
 
 def simple_linear(X, args):
     delta_t = args[0]
@@ -116,10 +171,24 @@ def simple_linear(X, args):
 
 def identity(X, args):
     return X
+
+
+def non_linear(X, args):
+    delta_t = args[0]
+    index = args[1]
+    b = args[2]
+    #f2 = args[3]
+
+    flux = X[0, :] + b*(delta_t**(index))
+    rate_flux = X[1, :] + b*index*(delta_t**(index-1))
+
+
+    return np.array([flux, rate_flux])
+
 ##### MAIN ############
 
 
 if __name__ == '__main__':
     Xs= sigma_points(mean_=np.ones((2, 4094, 2046))*0.67, cov_= np.ones((3, 4094, 2046)))
     Wm, Wc = unscent_weights()
-    y_mean, y_cov = propagate_func(simple_linear, Wm, Wc, Xs)
+    #y_mean, y_cov = propagate_func(simple_linear, Wm, Wc, Xs)

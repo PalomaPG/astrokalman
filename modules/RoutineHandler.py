@@ -4,8 +4,8 @@ from KalmanFilter.MCKalman import MCKalman
 from KalmanFilter.UnscentKalman import UnscentKalman
 from modules.SourceFinder import SourceFinder
 from modules.utils import *
-from modules.unscented_utils import identity, simple_linear
-from modules.TPDetector import TPDetector
+from modules.unscented_utils import *
+from modules.Observer import Observer
 
 
 import pandas as pd
@@ -44,7 +44,8 @@ class RoutineHandler(object):
             return BasicKalman(sigma_a=self.dict_settings['sigma_a'], image_size=self.image_size)
         else:
             print('Unscented')
-            return UnscentKalman(simple_linear, identity)
+            return UnscentKalman(non_linear, identity, f_args=[1.5, 1.0],  h_args=[],
+                                 sigma_a=self.dict_settings['sigma_a'], image_size=self.image_size)
 
     def iterate_over_sequences(self, check_found_objects = False):
         self.routine(self.obs.ix[self.index, 'Semester'], self.obs.ix[self.index, 'Field'],
@@ -56,11 +57,13 @@ class RoutineHandler(object):
             makedirs(results_path, exist_ok=True)
         return results_path
 
+
     def routine(self, semester, field, ccd,  check_found_objects = False, last_mjd=0.0):
 
         print('-----------------------------------------------------------')
         print('Semester: %s | Field: %s | CCD: %s' % (semester, field, ccd))
         print('-----------------------------------------------------------')
+        #print(np.array([float(self.obs.ix[self.index, 'POS_Y']), float(self.obs.ix[self.index, 'POS_X'])]))
 
         results_path = self.config_path()
 
@@ -81,7 +84,7 @@ class RoutineHandler(object):
 
         if check_found_objects:
             print('NPZ file...')
-            tpd = TPDetector(n_obs)
+            tpd = Observer(n_obs)
             path_npz = ( '%ssources_sem_%s_field_%s_ccd_%s.npz' %
                          (self.dict_settings['cand_data_npz'], semester, field, ccd))
             data = np.load(path_npz)
@@ -97,6 +100,8 @@ class RoutineHandler(object):
 
             if o>0:
                 delta_t = picker.mjd[o] - picker.mjd[o - 1]
+            print(np.min(self.kf.state_cov[0, :]))
+            print(np.min(self.kf.state_cov[2, :]))
 
             self.kf.update(delta_t, flux, var_flux, self.kf.state, self.kf.state_cov, self.kf.pred_state,
                            self.kf.pred_cov)
@@ -117,12 +122,12 @@ class RoutineHandler(object):
 
         if not check_found_objects:
 
-            finder.check_candidates(self.index, SN_pos=np.array([float(self.obs['POS_Y']), float(self.obs['POS_X'])],
-                                                            dtype=float))
+            finder.check_candidates(self.index, SN_pos=np.array([float(self.obs.ix[self.index, 'POS_Y']),
+                                                                 float(self.obs.ix[self.index, 'POS_X'])]))
             output = os.path.join(results_path, 'sources_sem_%s_field_%s_ccd_%s' % (semester, field, ccd))
             np.savez(output, cand_data=finder.CandData)
             print('Number of unidentified objects: ' + str(finder.NUO))
-        else:
+        elif len(tpd.obj) > 0:
             print(tpd.obj[0]['MJD'])
             plot_path = self.config_path(output='plots')
             tpd.plot_results(tpd.obj, semester=semester, ccd=ccd, field=field, plot_path=plot_path)
@@ -135,7 +140,7 @@ class RoutineHandler(object):
         ccd = self.obs.ix[self.index, 'CCD']
         picker = DataPicker(self.route_templates, semester, field, ccd)
 
-        tpd = TPDetector(picker.mjd)
+        tpd = Observer(picker.mjd)
         path_npz = ('%ssources_sem_%s_field_%s_ccd_%s.npz' %
                     (self.dict_settings['cand_data_npz'], semester, field, ccd))
         data = np.load(path_npz)

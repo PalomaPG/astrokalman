@@ -20,14 +20,11 @@ class SourceFinder(object):
         self.pixel_conditions = np.zeros(tuple([self.n_conditions]) + image_size, dtype=bool)
         self.pixel_flags = np.zeros(image_size, dtype=int)
         print(self.pixel_flags)
-        #self.n_consecutive_obs = n_consecutive_obs
         self.accum_compliant_pixels = np.zeros(tuple([n_consecutive_obs]) + image_size, dtype=bool)
-
 
         self.flux_thresh = flux_thresh
         self.flux_rate_thresh = flux_rate_thresh
         self.rate_satu = rate_satu
-        #self.median_rejection = np.zeros(image_size, dtype=bool)
         self.CandData = []
 
         self.median_rejection = np.zeros(image_size, dtype=bool)
@@ -35,7 +32,6 @@ class SourceFinder(object):
         self.accum_neg_flux_depth = accum_neg_flux_depth
         self.accum_med_flux_depth = accum_med_flux_depth
         self.accum_median_flux = np.zeros(tuple([accum_med_flux_depth]) + image_size)
-
 
 
     def pixel_discard(self, science, state, state_cov, dil_mask, o):
@@ -53,15 +49,24 @@ class SourceFinder(object):
         self.pixel_conditions[:] = False
         type(self.pixel_flags)
 
-
-
         self.pixel_flags[:] = 0
-
+        print('Mins state')
+        print(np.nanmin(state[0, :]))
+        print(np.nanmin(state[1, :]))
+        print('Maxs state')
+        print(np.nanmax(state[0, :]))
+        print(np.nanmax(state[1, :]))
         self.pixel_conditions[0, :] = state[0, :] > self.flux_thresh
         self.pixel_conditions[1, :] = state[1, :] > (self.flux_rate_thresh * (
                 self.rate_satu - np.minimum(state[0, :], self.rate_satu)) / self.rate_satu)
         self.pixel_conditions[2, :] = science > science_median + 5
         self.pixel_conditions[3, :] = state_cov[0, :] < 150.0  # check value
+        print('Mins cov')
+        print(np.nanmin(state_cov[0,:]))
+        print(np.nanmin(state_cov[2, :]))
+        print('Max cov')
+        print(np.nanmax(state_cov[0,:]))
+        print(np.nanmax(state_cov[2, :]))
         self.pixel_conditions[4, :] = state_cov[2, :] < 150.0
         self.pixel_conditions[5, :] = np.logical_not(dil_mask)
         self.pixel_conditions[6, :] = np.logical_not(self.median_rejection)
@@ -234,9 +239,6 @@ class SourceFinder(object):
             self.NUO = len(self.CandData)
             for i in range(len(self.CandData)):
                 self.CandData[i]['status'] = -1
-
-
-
 
 
     def draw_complying_pixel_groups(self, science, state, state_cov, base_mask,

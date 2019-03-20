@@ -4,7 +4,7 @@ import numpy as np
 from modules.Visualizer import Visualizer
 
 
-class TPDetector(object):
+class Observer(object):
 
     def __init__(self, num_obs, obs_rad=10, figsize1=12, figsize2=8):
         """

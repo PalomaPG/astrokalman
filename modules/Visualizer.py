@@ -202,11 +202,12 @@ class Visualizer:
         plt.vlines(x=flux_thresh, ymin=rate_flux_thresh, ymax=y_max, color='red', linestyles='dashed',zorder=2)
         plt.hlines(y=rate_flux_thresh, xmin=x_min, xmax=flux_thresh, color='red', zorder=2)
         plt.hlines(y=rate_flux_thresh, xmin=flux_thresh, xmax=x_max, color='red', linestyles='dashed', zorder=2)
-        plt.title('Position: ' + str(obj['posY']) + ',' + str(obj['posX']) )#+ ', status: ' + str(obj['status']))
+        plt.title('Position: ' + ( '%.2f' % obj['posY']) + ',' + ('%.2f' % obj['posX']) +
+                  (' [ Entropy level: %.2f ]' %  entropy_value))#+ ', status: ' + str(obj['status']))
         plt.xlabel('Flux [ADU]')
         plt.ylabel('Flux Velocity [ADU/day]')
-        plt.text(x_max * 0.75, y_max * 0.75, 'Estimated curve entropy: %.2f' % entropy_value, fontsize=10,
-                 bbox={'facecolor': 'white', 'pad': 10})
+        #plt.text(x_max * 0.75, y_max * 0.75, 'Estimated curve entropy: %.2f' % entropy_value, fontsize=10,
+        #         bbox={'facecolor': 'white', 'pad': 10})
 
         if len(save_filename) > 0:
             plt.savefig(save_filename, bbox_inches='tight')

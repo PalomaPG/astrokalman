@@ -1,9 +1,9 @@
 imgHeight=4094
 imgWidth=2046
-filter=basic
-results=/home/paloma/Documents/RESULTS/BASIC/
-plots=/home/paloma/Documents/PLOTS/BASIC/
-cand_data_npz=/home/paloma/Documents/RESULTS/BASIC/
+filter=ukf
+results=/home/paloma/Documents/RESULTS/UNSCENT/
+plots=/home/paloma/Documents/PLOTS/UNSCENT/
+cand_data_npz=/home/paloma/Documents/RESULTS/UNSCENT/
 init_var=100.0
 flux_thresh=200.0
 flux_rate_thresh=50.0

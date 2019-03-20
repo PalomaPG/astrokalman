@@ -6,7 +6,7 @@ import numpy as np
 
 from modules.DataPicker import DataPicker
 from modules.utils import *
-from modules.unscented_utils import simple_linear, identity
+from modules.unscented_utils import simple_linear, identity, non_linear
 from modules.SourceFinder import SourceFinder
 from KalmanFilter.UnscentKalman import UnscentKalman
 from KalmanFilter.BasicKalman import BasicKalman
@@ -15,7 +15,10 @@ from KalmanFilter.BasicKalman import BasicKalman
 class Tests(unittest.TestCase):
 
     def setUp(self):
+        self.ukf_lin = UnscentKalman(simple_linear, identity, f_args=[], h_args=[], image_size=(2,2))
+        self.ukf_nonlin = UnscentKalman(non_linear, identity, f_args=[2.0, 1.0],  h_args=[],  image_size=(2,2))
 
+        '''
         obs_index_path = '/home/paloma/Documents/Memoria/Code/sif2/inputs/test.csv'
         sn_index = 0
         config_path = '/home/paloma/Documents/Memoria/Code/sif2/inputs/input_example.txt'
@@ -31,7 +34,36 @@ class Tests(unittest.TestCase):
         self.invvar_ = picker.data['invDir']
         self.aflux_ = picker.data['afluxDir']
         self.mask_ = picker.data['maskDir']
+        '''
 
+    def test_lin(self):
+        init_state = 0.0
+        init_var = 100.0
+        image_size = (2, 2)
+        state = init_state * np.ones(tuple([2]) + image_size, dtype=float)
+        state_cov = np.zeros(tuple([3]) + image_size, dtype=float)
+        state_cov[[0, 2], :] = init_var
+        pred_state = state.copy()
+        pred_cov = state_cov.copy()
+        delta_t = 2
+        state[0,:] = 2.0*np.ones(image_size)
+        pred_state_lin, pred_cov_lin, Xs_lin = self.ukf_lin.predict(delta_t=delta_t, state=state, state_cov=state_cov,
+                                               pred_state=pred_state, pred_cov=pred_cov)
+        pred_state_nonlin, pred_cov_nonlin, Xs_nonlin = self.ukf_nonlin.predict(delta_t=delta_t, state=state, state_cov=state_cov,
+                                               pred_state=pred_state, pred_cov=pred_cov)
+
+        self.ukf_lin.icorrect.define_params(Xs_lin)
+        self.ukf_nonlin.icorrect.define_params(Xs_nonlin)
+        z = 34.0*np.ones(image_size)
+        R = 15.0*np.ones(image_size, dtype=float)
+
+        print(pred_state_nonlin)
+        print(pred_cov_nonlin)
+        state_nonlin, state_cov_nonlin, kalman_gain = self.ukf_nonlin.correct(z, R, pred_state_nonlin, pred_cov_nonlin, state, state_cov)
+        print(state_nonlin)
+        print(state_cov_nonlin)
+
+    '''
     def test_unscent(self):
         print('Filtering with Unscent Kalman')
         o = 0
@@ -68,6 +100,7 @@ class Tests(unittest.TestCase):
         u_state, u_state_cov = ukf.correct(flux, var_flux, pred_cov=u_pred_cov, pred_state=u_pred_state, state=u_state,
                                            state_cov=u_state_cov)
         #np.testing.assert_array_almost_equal(u_pred_cov, pred_cov)
+    '''
 
 if __name__ == '__main__':
     unittest.main()

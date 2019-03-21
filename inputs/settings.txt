@@ -14,3 +14,7 @@ epsilon=1e-6
 max_iter=10
 std_factor=100.0
 silverman_sigma=0
+beta=2.0
+kappa=0.0
+dim=2
+alpha=0.001

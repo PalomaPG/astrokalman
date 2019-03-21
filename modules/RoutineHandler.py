@@ -100,8 +100,7 @@ class RoutineHandler(object):
 
             if o>0:
                 delta_t = picker.mjd[o] - picker.mjd[o - 1]
-            print(np.min(self.kf.state_cov[0, :]))
-            print(np.min(self.kf.state_cov[2, :]))
+
 
             self.kf.update(delta_t, flux, var_flux, self.kf.state, self.kf.state_cov, self.kf.pred_state,
                            self.kf.pred_cov)

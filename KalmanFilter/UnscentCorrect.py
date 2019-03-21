@@ -33,50 +33,24 @@ class UnscentCorrect(ICorrect):
                                           args=self.h_args,image_size=self.image_size,
                                           mean=False)
         S_innovation[0] = S_innovation[0] + R
+
         # Cross covariance matrix
         C = cross_covariance(self.f_func, self.h_func, self.Wc, self.Xs, Ys, delta_t, self.f_args,
                          self.h_args, pred_state, pred_z, image_size=self.image_size)
 
+
+
         K = optimal_gain(C, S_innovation, image_size=self.image_size)
+
 
         k = np.zeros((tuple([2])+self.image_size))
         k[0] = K[0]*residuals[0] + K[1]*residuals[1]
         k[1] = K[2]*residuals[0] + K[3]*residuals[1]
         state = pred_state + k
+
         KSKt = get_KSKt_product(K, S_innovation, image_size=self.image_size)
         state_cov = pred_cov - KSKt
 
-        """
-        S=np.zeros(shape=state_cov.shape)
-        S[0] = state_cov[0] + R
-        S[1] = state_cov[1]
-        S[2] = state_cov[2]
-
-        #State-measurement
-        h_diff = []
-        f_diff = []
-
-        D = 2*self.d+1
-
-        for i in range(D):
-            f_diff.append(perform(self.f_func, self.Xs[i], [self.delta_t]+self.f_args))
-            h_diff.append(perform(self.h_func, Ys[i], ()))
-
-        for i in range(D):
-            h_diff[i] = h_diff[i] - state
-            f_diff[i] = f_diff[i] - pred_state
-
-        C = multiple_dot_products(h_diff, h_diff, self.Wc, image_size=self.image_size)
-        ##Optimal gain
-        K = matrices_dot_product(C, matrix_inverse(S))
-        state = pred_state + matrix_vector_dot_product(K, residual)
-        #print(state)
-        state_cov = np.zeros(shape=state_cov.shape)
-        state_cov[0] = 100
-        state_cov[2] = 20
-        #state_cov = (pred_cov - matrices_dot_product(K, matrices_dot_product(S, K)))
-        #pred_cov - matrices_dot_product(K, matrices_dot_product(S, K))#K @ S @ K.T
-        """
         return state, state_cov, K
 
 

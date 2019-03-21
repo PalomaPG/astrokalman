@@ -15,7 +15,6 @@ class LinearPredict(IPredict):
         Q = np.array([delta_t ** 4 / 4, delta_t ** 3 / 2, delta_t ** 2]) * (self.sigma_a ** 2)
         print('Q...')
         print(np.nanmin(Q[0]))
-
         print(np.nanmax(Q[1]))
 
         alpha = state_cov[1, :] + delta_t * state_cov[2, :] # reserve in original code
@@ -30,6 +29,5 @@ class LinearPredict(IPredict):
         print(np.nanmax(pred_cov[0]))
         print(np.nanmin(pred_cov[1]))
         print(np.nanmin(pred_cov[2]))
-
 
         return pred_state, pred_cov

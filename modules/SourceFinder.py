@@ -1,6 +1,5 @@
 from modules.utils import *
 
-from modules.DataContent import DataContent
 
 class SourceFinder(object):
 
@@ -19,7 +18,6 @@ class SourceFinder(object):
         self.n_conditions = 7
         self.pixel_conditions = np.zeros(tuple([self.n_conditions]) + image_size, dtype=bool)
         self.pixel_flags = np.zeros(image_size, dtype=int)
-        print(self.pixel_flags)
         self.accum_compliant_pixels = np.zeros(tuple([n_consecutive_obs]) + image_size, dtype=bool)
 
         self.flux_thresh = flux_thresh
@@ -47,26 +45,13 @@ class SourceFinder(object):
 
         science_median = subsampled_median(science, self.image_size, 20)
         self.pixel_conditions[:] = False
-        type(self.pixel_flags)
 
         self.pixel_flags[:] = 0
-        print('Mins state')
-        print(np.nanmin(state[0, :]))
-        print(np.nanmin(state[1, :]))
-        print('Maxs state')
-        print(np.nanmax(state[0, :]))
-        print(np.nanmax(state[1, :]))
         self.pixel_conditions[0, :] = state[0, :] > self.flux_thresh
         self.pixel_conditions[1, :] = state[1, :] > (self.flux_rate_thresh * (
                 self.rate_satu - np.minimum(state[0, :], self.rate_satu)) / self.rate_satu)
         self.pixel_conditions[2, :] = science > science_median + 5
         self.pixel_conditions[3, :] = state_cov[0, :] < 150.0  # check value
-        print('Mins cov')
-        print(np.nanmin(state_cov[0,:]))
-        print(np.nanmin(state_cov[2, :]))
-        print('Max cov')
-        print(np.nanmax(state_cov[0,:]))
-        print(np.nanmax(state_cov[2, :]))
         self.pixel_conditions[4, :] = state_cov[2, :] < 150.0
         self.pixel_conditions[5, :] = np.logical_not(dil_mask)
         self.pixel_conditions[6, :] = np.logical_not(self.median_rejection)

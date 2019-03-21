@@ -18,10 +18,6 @@ class UnscentPredict(IPredict):
     def predict(self, delta_t, state, state_cov, pred_state, pred_cov):
         Xs = sigma_points(state, state_cov, lambda_=self.lambda_, N=self.d)
         u, Q =get_uQ(args=[delta_t]+self.f_args, image_size=self.image_size)
-        print('Q min')
-        print(np.min(Q[0]))
-        print('Q max')
-        print(np.max(Q[0]))
         pred_state, pred_cov = propagate_func_pred(self.f_func, self.Wm, self.Wc, Xs, u, self.sigma_a*Q, delta_t,
                                               args = self.f_args, image_size=self.image_size)
         return pred_state, pred_cov, Xs

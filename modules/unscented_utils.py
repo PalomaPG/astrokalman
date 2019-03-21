@@ -16,6 +16,8 @@ def sigma_points(mean_, cov_, lambda_,  N=2):
     :return:
     """
     L, U = cholesky((N+lambda_)*cov_)
+    #L, U = cholesky(cov_)
+
     X_0 = mean_
     X_1 = mean_ + L[[0, 1]]
     X_2 = mean_ + L[[1, 2]]
@@ -48,8 +50,10 @@ def propagate_func_pred(func, W_m, W_c,  Xs, u, Q, delta_t, args, D=2, image_siz
         Ys.append(perform(func, Xs[i], [delta_t] + args))
 
     y_mean =  np.zeros((tuple([2]) + image_size))
+
     for i in range(l):
         y_mean += W_m[i] * Ys[i]
+
 
     y_cov = np.zeros(tuple([3]) + image_size)
     for i in range(l):
@@ -114,8 +118,8 @@ def optimal_gain(C, S, image_size=(4094, 2046)):
 
     alpha = (S[0]*S[2] - S[1]*S[1])**(-1)
     K[0] = alpha*(C[0]*S[2]-C[1]*S[1])
-    K[1] = alpha*(-C[0]*S[1]-C[1]*S[0])
-    K[2] = alpha*(-C[2]*S[2]+C[3]*S[1])
+    K[1] = alpha*(-C[0]*S[1]+C[1]*S[0])
+    K[2] = alpha*(C[2]*S[2]-C[3]*S[1])
     K[3] = alpha*(-C[2]*S[1]+C[3]*S[0])
 
     return K
@@ -138,22 +142,20 @@ def get_KSKt_product(K,S, image_size):
 
 
 def get_uQ(args, image_size):
-    if len(args) <= 1 :
-        return np.zeros(shape=(tuple([2])+image_size)), np.zeros(shape=(tuple([3])+image_size))
-    else :
-        delta_t = args[0]
-        index = args[1]
-        b = args[2]
-        u = np.zeros(shape=(tuple([2])+image_size))
-        u[0] = b*delta_t**index
-        u[1] = b*(index)*delta_t**(index-1)
 
-        Q = np.zeros(shape=(tuple([3]) +image_size))
-        Q[0, :] = delta_t ** (2 * index)
-        Q[1, :] = b * delta_t ** (2 * b - 1)
-        Q[2, :] = (b ** 2) * (delta_t ** (2 * (b - 1)))
-        print(np.nanmin(Q[0]))
-        return u, Q
+    delta_t = args[0]
+    index = args[1]
+    b = args[2]
+
+    u = np.zeros(shape=(tuple([2])+image_size))
+    u[0] = b*delta_t**index
+    u[1] = b*(index)*delta_t**(index-1)
+
+    Q = np.zeros(shape=(tuple([3]) +image_size))
+    Q[0, :] = delta_t ** (2 * index)
+    Q[1, :] = b * delta_t ** (2 * b - 1)
+    Q[2, :] = (b ** 2) * (delta_t ** (2 * (b - 1)))
+    return u, Q
 
 
 

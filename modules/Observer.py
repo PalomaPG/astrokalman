@@ -1,4 +1,3 @@
-import glob
 import numpy as np
 
 from modules.Visualizer import Visualizer

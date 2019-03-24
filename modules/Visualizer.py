@@ -30,6 +30,7 @@ class Visualizer:
         posX = obs_rad
         MJD = obj['MJD']
 
+
         this_fig = plt.figure(figsize=(figsize1,figsize2))
 
         ax1 = plt.subplot2grid((num_graphs, 1), (0, 0))
@@ -43,7 +44,7 @@ class Visualizer:
         plt.legend(loc=0, fontsize='small')
         plt.xlim(MJD[0] - 1, MJD[-1] + 1)
         plt.ylim([min(obj['state'][:, 0, posY, posX]) - 500, max(obj['state'][:, 0, posY, posX]) + 500])
-        plt.title('Position: ' + str(obj['posY']) + ',' + str(obj['posX']) )#+ ', status: ' + str(obj['status']))
+        plt.title('Position: %.2f, %.2f' % (obj['posY'], obj['posX']))#+ ', status: ' + str(obj['status']))
 
         plt.subplot2grid((num_graphs, 1), (1, 0), sharex=ax1)
         plt.errorbar(MJD, obj['state'][:, 1, posY, posX], yerr=obj['state_cov'][:, 2, posY, posX], fmt='b.-',
@@ -118,7 +119,7 @@ class Visualizer:
         plt.imshow(self.stack_stamps(obj['science'], MJD), vmin=0, vmax=600, cmap='Greys_r', interpolation='none')
         plt.axis('off')
         plt.title(
-            'Science image, position: ' + str(obj['posY']) + ',' + str(obj['posX']))# + ', status: ' + str(obj['status']))
+            'Science image, position: %.2f, %.2f' % (obj['posY'], obj['posX']))# + ', status: ' + str(obj['status']))
 
         plt.subplot2grid((num_graphs, 1), (1, 0))
         plt.imshow(self.stack_stamps(obj['psf'], MJD), vmin=0, vmax=0.05, cmap='Greys_r', interpolation='none')
@@ -183,18 +184,20 @@ class Visualizer:
         posY = obs_rad
         posX = obs_rad
 
+
         this_fig = plt.figure(figsize=(figsize1, figsize2))
         epochs = list(range(obj['epochs'][0]-3, obj['epochs'][0]))+list(obj['epochs'])
-        print(epochs)
 
-        plt.plot(obj['state'][epochs, 0, posY, posX], obj['state'][epochs, 1, posY, posX], 'b.-', label='Estimation')
+        points = np.column_stack((obj['state'][epochs, 0, posY, posX], obj['state'][epochs, 1, posY, posX]))
+        entropy_value = self.entropy_value(points)
+
+        plt.plot(obj['state'][epochs, 0, posY, posX], obj['state'][epochs, 1, posY, posX], 'b.-', label=('Estimation ( Entropy : %.2f )' % entropy_value))
         plt.plot(obj['obs_flux'][epochs, posY, posX], np.diff(np.concatenate((np.zeros(1), obj['obs_flux'][epochs, posY, posX]))),
                  'r.-', label='Observation', alpha=0.25)
         plt.grid()
         plt.legend(loc=0, fontsize='small')
         x_min, x_max, y_min, y_max = self.limits(obj['state'], [posY, posX], x_margin=100, y_margin=50, epochs=epochs)
-        points = np.column_stack((obj['state'][epochs, 0, posY, posX], obj['state'][epochs, 1, posY, posX]))
-        entropy_value = self.entropy_value(points)
+
         #plt.plot([500, 3000], [150, 0], 'k-')
         plt.xlim(x_min, x_max)
         plt.ylim(y_min, y_max)
@@ -202,10 +205,11 @@ class Visualizer:
         plt.vlines(x=flux_thresh, ymin=rate_flux_thresh, ymax=y_max, color='red', linestyles='dashed',zorder=2)
         plt.hlines(y=rate_flux_thresh, xmin=x_min, xmax=flux_thresh, color='red', zorder=2)
         plt.hlines(y=rate_flux_thresh, xmin=flux_thresh, xmax=x_max, color='red', linestyles='dashed', zorder=2)
-        plt.title('Position: ' + ( '%.2f' % obj['posY']) + ',' + ('%.2f' % obj['posX']) +
-                  (' [ Entropy level: %.2f ]' %  entropy_value))#+ ', status: ' + str(obj['status']))
+        plt.title('Position: ' + ( '%.2f' % obj['posY']) + ',' + ('%.2f' % obj['posX']))#+ ', status: ' + str(obj['status']))
         plt.xlabel('Flux [ADU]')
         plt.ylabel('Flux Velocity [ADU/day]')
+        print([obj['state'][obj['epochs'][0], 0, posY, posX], obj['state'][obj['epochs'][0], 1, posY, posX]])
+        plt.annotate(xy=[obj['state'][obj['epochs'][0], 0, posY, posX], obj['state'][obj['epochs'][0], 1, posY, posX]], s=('MJD: %.2f' % obj['MJD'][obj['epochs'][0]]))
         #plt.text(x_max * 0.75, y_max * 0.75, 'Estimated curve entropy: %.2f' % entropy_value, fontsize=10,
         #         bbox={'facecolor': 'white', 'pad': 10})
 

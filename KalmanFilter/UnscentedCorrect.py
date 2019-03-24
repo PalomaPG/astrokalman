@@ -2,7 +2,7 @@ from .ICorrect import ICorrect
 from modules.unscented_utils import *
 
 
-class UnscentCorrect(ICorrect):
+class UnscentedCorrect(ICorrect):
 
     def __init__(self, f_func, h_func, f_args, h_args,  Wm, Wc, lambda_,  d=2, image_size= (4094, 2046)):
 
@@ -47,10 +47,13 @@ class UnscentCorrect(ICorrect):
         k[0] = K[0]*residuals[0] + K[1]*residuals[1]
         k[1] = K[2]*residuals[0] + K[3]*residuals[1]
         state = pred_state + k
+        print('Calc state...\n')
+        print(pred_state)
+        print(k)
 
         KSKt = get_KSKt_product(K, S_innovation, image_size=self.image_size)
         state_cov = pred_cov - KSKt
 
-        return state, state_cov, K
+        return state, state_cov, K[[0, 3]]
 
 

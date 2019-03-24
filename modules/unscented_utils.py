@@ -41,7 +41,7 @@ def perform(func, *args):
     return func(*args)
 
 
-def propagate_func_pred(func, W_m, W_c,  Xs, u, Q, delta_t, args, D=2, image_size=(4094, 2046)):
+def propagate_func_pred(func, W_m, W_c,  Xs,  Q, delta_t, args, D=2, image_size=(4094, 2046)):
     #Assesses Ys values
 
     l = int(2*D + 1)
@@ -50,10 +50,11 @@ def propagate_func_pred(func, W_m, W_c,  Xs, u, Q, delta_t, args, D=2, image_siz
         Ys.append(perform(func, Xs[i], [delta_t] + args))
 
     y_mean =  np.zeros((tuple([2]) + image_size))
+    print('Y_meannn')
+    print(y_mean.shape)
 
     for i in range(l):
         y_mean += W_m[i] * Ys[i]
-
 
     y_cov = np.zeros(tuple([3]) + image_size)
     for i in range(l):
@@ -63,7 +64,7 @@ def propagate_func_pred(func, W_m, W_c,  Xs, u, Q, delta_t, args, D=2, image_siz
         y_cov[2] += W_c[i] * np.power(y_diff_2, 2)
         y_cov[1] += W_c[i] * (y_diff_0*y_diff_2)
 
-    return y_mean+u, y_cov+Q
+    return y_mean, y_cov+Q
 
 
 def propagate_func_corr(func, W_m, W_c, Xs, delta_t, args, D=2, image_size=(4094, 2046), mean=True):
@@ -141,21 +142,17 @@ def get_KSKt_product(K,S, image_size):
     return KSKt
 
 
-def get_uQ(args, image_size):
+def get_Q(args, image_size):
 
     delta_t = args[0]
     index = args[1]
     b = args[2]
 
-    u = np.zeros(shape=(tuple([2])+image_size))
-    u[0] = b*delta_t**index
-    u[1] = b*(index)*delta_t**(index-1)
-
     Q = np.zeros(shape=(tuple([3]) +image_size))
-    Q[0, :] = delta_t ** (2 * index)
-    Q[1, :] = b * delta_t ** (2 * b - 1)
-    Q[2, :] = (b ** 2) * (delta_t ** (2 * (b - 1)))
-    return u, Q
+    Q[0, :] = (b**2) * (delta_t ** (2 * index))
+    Q[1, :] = (b**2) * index * (delta_t **(2*index-1))
+    Q[2, :] = (b**2) * (index**2) * (delta_t **(2*(index-1)))
+    return Q
 
 
 
@@ -183,7 +180,6 @@ def non_linear(X, args):
 
     flux = X[0, :] + b*(delta_t**(index))
     rate_flux = X[1, :] + b*index*(delta_t**(index-1))
-
 
     return np.array([flux, rate_flux])
 

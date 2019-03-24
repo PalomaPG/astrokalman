@@ -8,7 +8,7 @@ from modules.DataPicker import DataPicker
 from modules.utils import *
 from modules.unscented_utils import simple_linear, identity, non_linear
 from modules.SourceFinder import SourceFinder
-from KalmanFilter.UnscentKalman import UnscentKalman
+from KalmanFilter.UnscentedKalman import UnscentKalman
 from KalmanFilter.BasicKalman import BasicKalman
 
 

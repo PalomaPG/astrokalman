@@ -47,9 +47,6 @@ class UnscentedCorrect(ICorrect):
         k[0] = K[0]*residuals[0] + K[1]*residuals[1]
         k[1] = K[2]*residuals[0] + K[3]*residuals[1]
         state = pred_state + k
-        print('Calc state...\n')
-        print(pred_state)
-        print(k)
 
         KSKt = get_KSKt_product(K, S_innovation, image_size=self.image_size)
         state_cov = pred_cov - KSKt

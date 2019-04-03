@@ -17,12 +17,5 @@ class UnscentedKalman(KalmanFilter):
     def update(self, delta_t, z, R, state, state_cov, pred_state, pred_cov):
         self.pred_state, self.pred_cov, Xs = self.predict(delta_t, state, state_cov, pred_state, pred_cov)
         self.icorrect.define_params(Xs)
-        self.state, self.state_cov,  self.kalman_gain  = self.correct(z, R, self.pred_state, self.pred_cov, state,
+        self.state, self.state_cov, self.kalman_gain  = self.correct(z, R, self.pred_state, self.pred_cov, state,
                                                                       state_cov, delta_t)
-
-
-
-
-
-
-

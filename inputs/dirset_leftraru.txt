@@ -1,0 +1,12 @@
+maskDir = /home/apps/astro/data/DATA/Blind%s_%s/%s
+scienceDir = /home/apps/astro/data/DATA/Blind%s_%s/%s
+diffDir = /home/apps/astro/data/DATA/Blind%s_%s/%s
+invDir = /home/apps/astro/data/DATA/Blind%s_%s/%s
+afluxDir = /home/apps/astro/data/SHARED/Blind%s_%s/%s/CALIBRATIONS
+psfDir = /home/apps/astro/data/SHARED/Blind%s_%s/%s/CALIBRATIONS
+maskRegEx = Blind%s_%s_%s_[0-9][0-9]_dqmask.fits.fz
+scienceRegEx = Blind%s_%s_%s_[0-9][0-9]_image_crblaster_grid02_lanczos2.fits
+diffRegEx = Diff_Blind%s_%s_%s_[0-9][0-9]t*-0[0-9]t*_grid02_lanczos2.fits
+invRegEx = invVAR_Blind%s_%s_%s_[0-9][0-9]t*-0[0-9]t*_grid02_lanczos2.fits
+afluxRegEx = match_Blind%s_%s_%s_[0-9][0-9]-0[0-9].npy
+psfRegEx = psf_Blind%s_%s_%s_[0-9][0-9]t*-0[0-9]t*_grid0[1-2]_lanczos2.npy

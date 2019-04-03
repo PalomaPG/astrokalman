@@ -1,0 +1,82 @@
+@startuml
+interface IPredict {
+    predict()
+}
+class LinearPredict{
+    sigma_a
+}
+
+interface ICorrect{
+    correct()
+}
+class MCCorrect{
+   epsilon
+   std_factor
+   sigma
+   silverman_sigma
+   max_iter
+}
+class BasicCorrect{
+}
+
+class KalmanFilter{
+    predict()
+    correct()
+    update()
+    image_size
+}
+class MCKalman {
+   sigma_a
+   epsilon
+   std_factor
+   sigma
+   silverman_sigma
+   max_iter
+}
+class BasicKalman{
+    sigma_a
+}
+
+
+
+ICorrect --> KalmanFilter
+IPredict --> KalmanFilter
+
+KalmanFilter <|-- MCKalman
+KalmanFilter <|-- BasicKalman
+
+BasicKalman --> LinearPredict
+MCKalman --> LinearPredict
+
+BasicKalman --> BasicCorrect
+MCKalman --> MCCorrect
+
+IPredict <|.. LinearPredict
+ICorrect <|.. MCCorrect
+ICorrect <|.. BasicCorrect
+
+@enduml
+
+
+abstract class AbstractList
+abstract AbstractCollection
+interface List
+interface Collection
+
+List <|-- AbstractList
+Collection <|-- AbstractCollection
+
+Collection <|- List
+AbstractCollection <|- AbstractList
+AbstractList <|-- ArrayList
+
+class ArrayList {
+Object[] elementData
+size()
+}
+
+enum TimeUnit {
+DAYS
+HOURS
+MINUTES
+}

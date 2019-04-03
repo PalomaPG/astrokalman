@@ -1,0 +1,14 @@
+{% block content %}
+Field: {{ field }}
+CCD: {{ ccd }}
+First science image: {{ science_ima_first }}
+Last science image: {{ science_ima_last }}
+First MJD: {{ first_mjd }}
+Last MJD: {{ last_mjd }}
+SN found: {{ if_sn }}
+# of found SNs: {{ n_sn }}
+SN coordinates: {{ sn_coords }}
+{% endblock %}
+
+
+

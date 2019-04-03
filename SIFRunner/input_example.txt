@@ -1,8 +1,0 @@
-baseDir =
-maskDir =
-projDir =
-baseRegEx =
-maskRegEx =
-projRegEx =
-imgHeight =
-imgWidth =

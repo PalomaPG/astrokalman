@@ -1,6 +1,5 @@
 from modules.RoutineHandler import RoutineHandler
-from modules.Observer import Observer
-from memory_profiler import profile
+
 import sys
 
 
@@ -11,4 +10,3 @@ if __name__ == '__main__':
 
     rh.iterate_over_sequences()
     rh.iterate_over_sequences(check_found_objects=True)
-    #rh.plot_results()

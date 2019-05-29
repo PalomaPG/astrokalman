@@ -63,15 +63,58 @@ class RoutineHandler(object):
             makedirs(results_path, exist_ok=True)
         return results_path
 
+    def routine_loop(self, init_mjd_idx, n_obs, picker, finder, observer, diff_, psf_, invvar_, aflux_,
+                     mask, dil_mask, mjd_o, data, delta_t,check_found_objects = False):
+        for o in range(init_mjd_idx, n_obs):
+
+            print('         %d. MJD :   %.2f' % (o, picker.mjd[o]))
+            print('------------------------------------- \n')
+
+            flux, var_flux, diff, psf = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
+
+
+            if o>0 and not self.dict_settings['UKF']:
+                delta_t = picker.mjd[o] - picker.mjd[o - 1]
+            elif o>0 and self.dict_settings['UKF']:
+                delta_t = picker.mjd[o] - picker.mjd[mjd_o]
+
+            self.kf.update(delta_t, flux, var_flux, self.kf.state, self.kf.state_cov, self.kf.pred_state,
+                           self.kf.pred_cov)
+
+
+            science_ = fits.open(picker.data['scienceDir'][o])
+
+            finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
+                                               flux, var_flux, o=o)
+
+
+            if check_found_objects and not self.dict_settings['UKF']:
+                observer.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
+                                   kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
+                                   time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
+                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o,
+                                   group_flags_map=finder.PGData['group_flags_map'],
+                                   pixel_flags=finder.pixel_flags)
+            elif check_found_objects and self.dict_settings['UKF']:
+                observer.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
+                                   kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
+                                   time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
+                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o-1,
+                                   group_flags_map=finder.PGData['group_flags_map'],
+                                   pixel_flags=finder.pixel_flags)
+
+            science_.close()
+
 
     def routine(self, semester, field, ccd,  check_found_objects = False, last_mjd=0.0):
 
         print('-----------------------------------------------------------')
         print('Semester: %s | Field: %s | CCD: %s' % (semester, field, ccd))
         print('-----------------------------------------------------------')
-        #print(np.array([float(self.obs.ix[self.index, 'POS_Y']), float(self.obs.ix[self.index, 'POS_X'])]))
 
         results_path = self.config_path()
+        observer = None
+        data = None
 
         self.kf.define_params(self.dict_settings['init_var'])
 
@@ -89,7 +132,6 @@ class RoutineHandler(object):
 
         n_obs = len(picker.mjd)
 
-
         #Mask bad pixels and the neighbors
         mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
         init_mjd_idx = 0
@@ -103,88 +145,34 @@ class RoutineHandler(object):
             stack_length = n_obs-1
 
         if check_found_objects:
-            tpd = Observer(stack_length)
+            observer = Observer(stack_length)
             path_npz = ( '%ssources_sem_%s_field_%s_ccd_%s.npz' %
                          (self.dict_settings['cand_data_npz'], semester, field, ccd))
             data = np.load(path_npz)
             if len(data['cand_data']) == 0:
                 print('No hay candidatos')
                 sys.exit(0)
-            tpd.set_space(data['cand_data'])
+            observer.set_space(data['cand_data'])
 
         mjd_o = 0
 
-        flux_calc_time = 0.0
-        state_estim_time = 0.0
-        detection_time = 0.0
-        save_results_time  = 0.0
 
-        for o in range(init_mjd_idx, n_obs):
+        self.routine_loop(init_mjd_idx, n_obs, picker, finder, observer, diff_, psf_, invvar_, aflux_,
+                     mask, dil_mask, mjd_o, data, delta_t,check_found_objects)
 
-            print('         %d. MJD :   %.2f' % (o, picker.mjd[o]))
-            print('------------------------------------- \n')
-
-            start_time = resource_usage(RUSAGE_SELF).ru_utime
-            flux, var_flux, diff, psf = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
-            end_time = resource_usage(RUSAGE_SELF).ru_utime
-            flux_calc_time += (end_time-start_time)
-
-            if o>0 and not self.dict_settings['UKF']:
-                delta_t = picker.mjd[o] - picker.mjd[o - 1]
-            elif o>0 and self.dict_settings['UKF']:
-                delta_t = picker.mjd[o] - picker.mjd[mjd_o]
-
-            start_time = resource_usage(RUSAGE_SELF).ru_utime
-            self.kf.update(delta_t, flux, var_flux, self.kf.state, self.kf.state_cov, self.kf.pred_state,
-                           self.kf.pred_cov)
-            end_time = resource_usage(RUSAGE_SELF).ru_utime
-            state_estim_time += (end_time-start_time)
-
-            science_ = fits.open(picker.data['scienceDir'][o])
-
-            start_time = resource_usage(RUSAGE_SELF).ru_utime
-            finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
-                                               flux, var_flux, o=o)
-            end_time = resource_usage(RUSAGE_SELF).ru_utime
-            detection_time += (end_time-start_time)
-
-
-            if check_found_objects and not self.dict_settings['UKF']:
-                tpd.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
-                                   kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
-                                   time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
-                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o,
-                                   group_flags_map=finder.PGData['group_flags_map'],
-                                   pixel_flags=finder.pixel_flags)
-            elif check_found_objects and self.dict_settings['UKF']:
-                tpd.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
-                                   kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
-                                   time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
-                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o-1,
-                                   group_flags_map=finder.PGData['group_flags_map'],
-                                   pixel_flags=finder.pixel_flags)
-
-            science_.close()
 
         if not check_found_objects:
 
-            start_time = resource_usage(RUSAGE_SELF).ru_utime
             finder.check_candidates(self.index, SN_pos=np.array([float(self.obs.ix[self.index, 'POS_Y']),
                                                                  float(self.obs.ix[self.index, 'POS_X'])]))
             output = os.path.join(results_path, 'sources_sem_%s_field_%s_ccd_%s' % (semester, field, ccd))
             np.savez(output, cand_data=finder.CandData)
-            end_time = resource_usage(RUSAGE_SELF).ru_utime
-            save_results_time += (end_time-start_time)
-            print('Number of unidentified objects: ' + str(finder.NUO))
 
-            print('\nTime flux calc: %.2f\n' % flux_calc_time)
-            print('Estimation time (state): %.2f\n' % state_estim_time)
-            print('Detection time...: %.2f\n' % detection_time)
-            print('Saving results time: %.2f\n' % save_results_time)
 
-        elif len(tpd.obj) > 0:
+        elif len(observer.obj) > 0:
             plot_path = self.config_path(output='plots')
-            tpd.plot_results(tpd.obj, semester=semester, ccd=ccd, field=field, plot_path=plot_path)
+            observer.plot_results(observer.obj, semester=semester, ccd=ccd, field=field, plot_path=plot_path)
+
 
 
 if __name__ == '__main__':

@@ -50,8 +50,6 @@ def propagate_func_pred(func, W_m, W_c,  Xs,  Q, delta_t, args, D=2, image_size=
         Ys.append(perform(func, Xs[i], [delta_t] + args))
 
     y_mean =  np.zeros((tuple([2]) + image_size))
-    print('Y_meannn')
-    print(y_mean.shape)
 
     for i in range(l):
         y_mean += W_m[i] * Ys[i]

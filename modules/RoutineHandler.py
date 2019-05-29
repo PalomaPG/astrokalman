@@ -33,6 +33,11 @@ class RoutineHandler(object):
         self.dict_settings['UKF'] = False
         self.kf = self.retrieve_kalman_filter(self.dict_settings['filter'])
         self.config_path('plots')
+        self.finder = SourceFinder(flux_thresh=self.dict_settings['flux_thresh'],
+                              flux_rate_thresh=self.dict_settings['flux_rate_thresh'],
+                              rate_satu=self.dict_settings['rate_satu'], image_size= self.image_size)
+        self.picker = DataPicker(self.route_templates,self.obs.ix[self.index, 'Semester'], self.obs.ix[self.index, 'Field'],
+                            self.obs.ix[self.index, 'CCD'])
 
 
     def retrieve_kalman_filter(self, kalman_string):
@@ -54,6 +59,12 @@ class RoutineHandler(object):
                                  sigma_a=self.dict_settings['sigma_a'], image_size=self.image_size)
 
     def iterate_over_sequences(self, check_found_objects = False):
+
+        #Setting filenames
+        self.diff_ = self.picker.data['diffDir']
+        self.psf_ = self.picker.data['psfDir']
+        self.invvar_ = self.picker.data['invDir']
+        self.aflux_ = self.picker.data['afluxDir']
         self.routine(self.obs.ix[self.index, 'Semester'], self.obs.ix[self.index, 'Field'],
                      self.obs.ix[self.index, 'CCD'], check_found_objects=check_found_objects)
 
@@ -63,45 +74,43 @@ class RoutineHandler(object):
             makedirs(results_path, exist_ok=True)
         return results_path
 
-    def routine_loop(self, init_mjd_idx, n_obs, picker, finder, observer, diff_, psf_, invvar_, aflux_,
-                     mask, dil_mask, mjd_o, data, delta_t,check_found_objects = False):
+    def look_candata(self, observer, data, flux, var_flux, science_, mask, dil_mask, psf, diff, o):
+        observer.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
+                                kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
+                                time_mjd=self.picker.mjd[o], flux=flux, var_flux=var_flux, science=science_[0].data,
+                                diff=diff, psf=psf, base_mask=mask, dil_base_mask=dil_mask, o=o,
+                                group_flags_map=self.finder.PGData['group_flags_map'],
+                                pixel_flags=self.finder.pixel_flags)
+
+    def routine_loop(self, init_mjd_idx, n_obs,observer, mask, dil_mask, mjd_o, data, delta_t,
+                     check_found_objects = False):
         for o in range(init_mjd_idx, n_obs):
 
-            print('         %d. MJD :   %.2f' % (o, picker.mjd[o]))
+            print('         %d. MJD :   %.2f' % (o, self.picker.mjd[o]))
             print('------------------------------------- \n')
 
-            flux, var_flux, diff, psf = calc_fluxes(diff_[o], psf_[o], invvar_[o], aflux_[o])
+            flux, var_flux, diff, psf = calc_fluxes(self.diff_[o], self.psf_[o], self.invvar_[o], self.aflux_[o])
 
 
             if o>0 and not self.dict_settings['UKF']:
-                delta_t = picker.mjd[o] - picker.mjd[o - 1]
+                delta_t = self.picker.mjd[o] - self.picker.mjd[o - 1]
             elif o>0 and self.dict_settings['UKF']:
-                delta_t = picker.mjd[o] - picker.mjd[mjd_o]
+                delta_t = self.picker.mjd[o] - self.picker.mjd[mjd_o]
 
             self.kf.update(delta_t, flux, var_flux, self.kf.state, self.kf.state_cov, self.kf.pred_state,
                            self.kf.pred_cov)
 
+            science_ = fits.open(self.picker.data['scienceDir'][o])
 
-            science_ = fits.open(picker.data['scienceDir'][o])
-
-            finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
+            self.finder.draw_complying_pixel_groups(science_[0].data, self.kf.state, self.kf.state_cov, mask, dil_mask,
                                                flux, var_flux, o=o)
 
 
             if check_found_objects and not self.dict_settings['UKF']:
-                observer.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
-                                   kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
-                                   time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
-                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o,
-                                   group_flags_map=finder.PGData['group_flags_map'],
-                                   pixel_flags=finder.pixel_flags)
+                self.look_candata(observer, data, flux, var_flux, science_, mask, dil_mask, psf, diff, o)
+
             elif check_found_objects and self.dict_settings['UKF']:
-                observer.look_cand_data(data['cand_data'], pred_state=self.kf.pred_state, pred_state_cov=self.kf.pred_cov,
-                                   kalman_gain=self.kf.kalman_gain, state=self.kf.state, state_cov=self.kf.state_cov,
-                                   time_mjd=picker.mjd[o],flux=flux, var_flux=var_flux,science=science_[0].data,
-                                   diff=diff, psf=psf,base_mask=mask, dil_base_mask=dil_mask, o=o-1,
-                                   group_flags_map=finder.PGData['group_flags_map'],
-                                   pixel_flags=finder.pixel_flags)
+                self.look_candata(observer, data, flux, var_flux, science_, mask, dil_mask, psf, diff, o-1)
 
             science_.close()
 
@@ -118,28 +127,18 @@ class RoutineHandler(object):
 
         self.kf.define_params(self.dict_settings['init_var'])
 
-        picker = DataPicker(self.route_templates, semester, field, ccd)
-        finder = SourceFinder(flux_thresh=self.dict_settings['flux_thresh'],
-                              flux_rate_thresh=self.dict_settings['flux_rate_thresh'],
-                              rate_satu=self.dict_settings['rate_satu'], image_size= self.image_size)
-        #Setting filenames
-        diff_ = picker.data['diffDir']
-        psf_ = picker.data['psfDir']
-        invvar_ = picker.data['invDir']
-        aflux_ = picker.data['afluxDir']
+        delta_t = self.picker.mjd[0]-last_mjd
 
-        delta_t = picker.mjd[0]-last_mjd
-
-        n_obs = len(picker.mjd)
+        n_obs = len(self.picker.mjd)
 
         #Mask bad pixels and the neighbors
-        mask, dil_mask = mask_and_dilation(picker.data['maskDir'][0])
+        mask, dil_mask = mask_and_dilation(self.picker.data['maskDir'][0])
         init_mjd_idx = 0
         stack_length  = n_obs
 
         if self.dict_settings['UKF']:
             init_mjd_idx = 1
-            flux, var_flux, diff, psf = calc_fluxes(diff_[0], psf_[0], invvar_[0], aflux_[0])
+            flux, var_flux, diff, psf = calc_fluxes(self.diff_[0], self.psf_[0], self.invvar_[0], self.aflux_[0])
             self.kf.state[0] = flux
             self.kf.state_cov[0] = var_flux
             stack_length = n_obs-1
@@ -156,18 +155,14 @@ class RoutineHandler(object):
 
         mjd_o = 0
 
-
-        self.routine_loop(init_mjd_idx, n_obs, picker, finder, observer, diff_, psf_, invvar_, aflux_,
-                     mask, dil_mask, mjd_o, data, delta_t,check_found_objects)
-
+        self.routine_loop(init_mjd_idx, n_obs, observer, mask, dil_mask, mjd_o, data, delta_t,check_found_objects)
 
         if not check_found_objects:
 
-            finder.check_candidates(self.index, SN_pos=np.array([float(self.obs.ix[self.index, 'POS_Y']),
+            self.finder.check_candidates(self.index, SN_pos=np.array([float(self.obs.ix[self.index, 'POS_Y']),
                                                                  float(self.obs.ix[self.index, 'POS_X'])]))
             output = os.path.join(results_path, 'sources_sem_%s_field_%s_ccd_%s' % (semester, field, ccd))
-            np.savez(output, cand_data=finder.CandData)
-
+            np.savez(output, cand_data=self.finder.CandData)
 
         elif len(observer.obj) > 0:
             plot_path = self.config_path(output='plots')
